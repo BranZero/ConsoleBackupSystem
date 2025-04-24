@@ -13,10 +13,9 @@ public class DataPathFile
     private const string HEADER_ID = "DPF☺";
     private const ushort VERSION = 1;
 
-    
+
     public static bool TryAddDataPath(DataPath dataPath)
     {
-        CreateDataFile();
         DataPath[] dataPaths = GetDataPaths();
         //Check if exists
         foreach (var item in dataPaths)
@@ -26,7 +25,11 @@ public class DataPathFile
                 return false;
             }
         }
-
+        DataPath[] dataPathsNew = new DataPath[dataPaths.Length + 1];
+        dataPaths.CopyTo(dataPathsNew, 0);
+        dataPathsNew[dataPaths.Length] = dataPath;
+        UpdateDataPaths(dataPathsNew);
+        return true;
     }
 
     public static DataPath[] GetDataPaths()
@@ -55,7 +58,7 @@ public class DataPathFile
             dataPaths[i] = new DataPath(reader);
         }
         return dataPaths;
-        
+
     }
     private static void CreateDataFile()
     {
@@ -69,4 +72,44 @@ public class DataPathFile
         }
     }
 
+    private static void UpdateDataPaths(DataPath[] dataPaths)
+    {
+        CreateDataFile();
+        using FileStream fs = new FileStream(DATA_PATH_FILE_TEMP, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+        using BinaryWriter writer = new BinaryWriter(fs);
+        //Header
+        writer.Write(System.Text.Encoding.UTF8.GetBytes(HEADER_ID));
+        writer.Write(VERSION);
+        writer.Write((ushort)dataPaths.Length);
+
+        //Rows
+        foreach (var item in dataPaths)
+        {
+            item.ToData(writer);
+        }
+
+        //Clean Up
+        writer.Flush();
+        writer.Close();
+        writer.Dispose();
+
+        fs.Close();
+        fs.Dispose();
+
+        RenameDataFile();
+    }
+
+    private static void RenameDataFile()
+    {
+        try
+        {
+            if (File.Exists(DATA_PATH_FILE))
+                File.Delete(DATA_PATH_FILE);
+            File.Move(DATA_PATH_FILE_TEMP, DATA_PATH_FILE);
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
 }
