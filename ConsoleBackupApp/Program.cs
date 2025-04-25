@@ -45,6 +45,9 @@ public class Program
                 return AppCommands.Version(args);
             case "backup":
                 return AppCommands.Backup(args).ToString();
+            case "list":
+                AppCommands.List(args);
+                return "";
             default:
                 return "Invalid Command";
         }

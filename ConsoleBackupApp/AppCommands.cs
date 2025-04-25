@@ -117,9 +117,27 @@ public class AppCommands
         throw new NotImplementedException();
     }
 
-    internal static object List(string[] args)
+    internal static void List(string[] args)
     {
-        throw new NotImplementedException();
+        if (args.Length != 1)
+        {
+            Console.WriteLine("Error: Too Many Arguments");
+            return;
+        }
+
+        byte[] data = DataPathFile.ReadDataFile();
+        DataPath[] dataPaths = DataPathFile.GetDataPaths(data);
+        if (dataPaths.Length == 0)
+        {
+            Console.WriteLine("List is empty");
+            return;
+        }
+        //Sort the data for easy viewing
+        dataPaths = dataPaths.OrderBy(path => path).ToArray();
+        foreach (var path in dataPaths)
+        {
+            Console.WriteLine("{0,-80}", path.GetSourcePath());
+        }
     }
 
 

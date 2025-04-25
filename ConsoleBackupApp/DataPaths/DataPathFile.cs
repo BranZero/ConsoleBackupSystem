@@ -145,7 +145,7 @@ public class DataPathFile
             throw;//log errors
         }
     }
-    private static byte[] ReadDataFile()
+    internal static byte[] ReadDataFile()
     {
         try
         {
