@@ -1,4 +1,6 @@
 
+using ConsoleBackupApp.DataPaths;
+
 namespace ConsoleBackupApp;
 public class AppCommands
 {
@@ -12,16 +14,83 @@ public class AppCommands
     }
 
     /// <summary>
-    /// Support only adding one path at a time and add it to the data file
+    /// Support only adding one path at a time and ignore paths after it
     /// </summary>
     /// <param name="args"></param>
     public static Result Add(string[] args)
     {
-        return Result.Failure;
+        int index = 1;
+        if (args.Length < 2)
+        { // Check if their are arguments passed in
+            Console.WriteLine("Error: no arguments passed in.");
+            return Result.No_Arguments;
+        }
+
+        PathType pathType = PathType.Unknown;
+        Result optResult = CheckOptions(args[index], out HashSet<char> options);
+        if (optResult == Result.Valid_Option)
+        {
+            if (!options.Contains('f') || options.Count != 1)//only one valid option
+            {
+                return Result.Invalid_Option;
+            }
+            //-f force is option to overwrite the file if it exists
+            index++;
+        }
+        else if(optResult == Result.No_Options)
+        {
+            if (File.Exists(args[index]))
+            {
+                pathType = PathType.File;
+            }
+            else if (Directory.Exists(args[index]))
+            {
+                pathType = PathType.Directory;
+                if (args[index][^1] != Path.DirectorySeparatorChar)
+                {
+                    args[index] += Path.DirectorySeparatorChar;
+                }
+            }
+            else
+            {
+                return Result.Invalid_Path;
+            }
+        }
+        else
+        {
+            return optResult;
+        }
+        
+        ReadOnlySpan<string> argsLeft = new ReadOnlySpan<string>(args, index, args.Length - index);
+        if(!DataPath.Init(pathType, argsLeft, out DataPath dataPath)) return Result.Invalid_Path;
+
+        if(!DataPathFile.TryAddDataPath(dataPath)) return Result.Exists;
+
+        return Result.Success;
     }
 
     public static Result Remove(string[] args)
     {
+        int index = 1;
+        if (args.Length < 2)
+        { // Check if their are arguments passed in
+            Console.WriteLine("Error: no arguments passed in.");
+            return Result.No_Arguments;
+        }
+        else if(args.Length > 2)
+        {
+            Console.WriteLine("Error: too many arguments passed in.");
+            return Result.Too_Many_Arguments;
+        }
+        if (CheckOptions(args[index], out _) != Result.No_Options)
+        {
+            return Result.Invalid_Option;
+        }
+        //no options
+        if(DataPathFile.TryRemoveDataPath(args[1]))
+        {
+            return Result.Success;
+        }
         return Result.Failure;
     }
 
@@ -44,6 +113,24 @@ public class AppCommands
     {
         throw new NotImplementedException();
     }
+
+
+    public static Result CheckOptions(string input, out HashSet<char> options)
+    {
+        options = new HashSet<char>();
+        if (string.IsNullOrEmpty(input)) return Result.No_Options;
+        if(input.Length < 2) return Result.No_Options;
+        if(input[0] != '-') return Result.No_Options;
+
+        for (int i = 1; i < input.Length; i++) // Start from the second character
+        {
+            if (!options.Add(input[i]))
+            {
+                return Result.Duplicate_Option;
+            }
+        }
+        return Result.Valid_Option;
+    }
 }
 
 
@@ -52,7 +139,15 @@ public enum Result
     Success,
     Failure,
     Error,
+    Exists,
 
-    InvalidOption,
-    InvalidPath,
+    No_Arguments,
+    Too_Many_Arguments,
+
+    //Options
+    Invalid_Option,
+    Duplicate_Option,
+    Valid_Option,
+    No_Options,
+    Invalid_Path,
 }

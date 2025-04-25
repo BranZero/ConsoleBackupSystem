@@ -1,22 +1,21 @@
 
-
 namespace ConsoleBackupApp.DataPaths;
 public struct DataPath : IComparable<DataPath>
 {
     public char Drive;
-    public char Type;
-    public string Path;
+    public PathType Type;
+    public string SourcePath;
     public string[]? IgnorePaths;
 
     public DataPath(BinaryReader reader)
     {
         Drive = reader.ReadChar();
-        Type = reader.ReadChar();
+        Type = PathTypeExtensions.FromChar(reader.ReadChar());
         int ignorePathCount = reader.ReadByte();
         IgnorePaths = new string[ignorePathCount];
         int length = reader.ReadUInt16();
         char[] path = reader.ReadChars(length);
-        Path = new(path);
+        SourcePath = new(path);
 
 
         for (int i = 0; i < ignorePathCount; i++)
@@ -26,13 +25,30 @@ public struct DataPath : IComparable<DataPath>
             IgnorePaths[i] = new(ignorePath);
         }
     }
+
+    public static bool Init(PathType pathType, ReadOnlySpan<string> args, out DataPath dataPath)
+    {
+        dataPath = new DataPath();
+        if (args[0].Length < 4) return false;
+        if (!Char.IsAsciiLetterUpper(args[0][0])) return false;
+        dataPath.Drive = args[0][0];
+        dataPath.Type = pathType;
+        dataPath.SourcePath = args[0][3..];
+
+        dataPath.IgnorePaths = new string[args.Length - 1];
+        for (int i = 1; i < args.Length; i++)
+        {
+            dataPath.IgnorePaths[i-1] = args[i];
+        }
+        return true;
+    }
     public readonly int CompareTo(DataPath other)
     {
-        if(Drive - other.Drive != 0)
+        if (Drive - other.Drive != 0)
         {
             return Drive - other.Drive;
         }
-        return Path.CompareTo(other.Path);
+        return SourcePath.CompareTo(other.SourcePath);
     }
 
     /// <summary>
@@ -42,10 +58,10 @@ public struct DataPath : IComparable<DataPath>
     public readonly void ToData(BinaryWriter writer)
     {
         writer.Write(Drive);
-        writer.Write(Type);
+        writer.Write((byte)Type);
         writer.Write((byte)(IgnorePaths?.Length ?? 0));
-        writer.Write((ushort)Path.Length);
-        writer.Write(System.Text.Encoding.UTF8.GetBytes(Path));
+        writer.Write((ushort)SourcePath.Length);
+        writer.Write(System.Text.Encoding.UTF8.GetBytes(SourcePath));
 
         if (IgnorePaths == null) return;
         foreach (var item in IgnorePaths)
@@ -55,9 +71,16 @@ public struct DataPath : IComparable<DataPath>
         }
     }
 
+    public readonly string GetSourcePath()
+    {
+        string sourcePath = Drive + ":" + Path.DirectorySeparatorChar;
+        sourcePath += SourcePath;
+        return sourcePath;
+    }
+
     public readonly int ToDataRowSize()
     {
-        int size = 5 + Path.Length;
+        int size = 5 + SourcePath.Length;
         if (IgnorePaths == null) return size;
         foreach (string ignorePath in IgnorePaths)
         {

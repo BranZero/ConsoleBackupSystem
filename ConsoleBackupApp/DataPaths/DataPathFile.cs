@@ -8,11 +8,15 @@ public class DataPathFile
 {
     public const string DATA_PATH_FILE = @"Data.dpf";
     public const string DATA_PATH_FILE_TEMP = @"Data.dpf.tmp";
-    private static readonly string HEADER_ID = "DPF" + (char)1;
-    private const ushort VERSION = 1;
-    private const ushort HEADER_SIZE = 8;
+    public static readonly string HEADER_ID = "DPF" + (char)1;
+    public const ushort VERSION = 1;
+    public const ushort HEADER_SIZE = 8;
 
-
+    /// <summary>
+    /// Try to add a path to the list of paths to be backedup
+    /// </summary>
+    /// <param name="dataPath"></param>
+    /// <returns>Does it already exist in data file</returns>
     public static bool TryAddDataPath(DataPath dataPath)
     {
         DataPath[] dataPaths = GetDataPaths(ReadDataFile());
@@ -27,8 +31,32 @@ public class DataPathFile
         DataPath[] dataPathsNew = new DataPath[dataPaths.Length + 1];
         dataPaths.CopyTo(dataPathsNew, 0);
         dataPathsNew[dataPaths.Length] = dataPath;
-        byte[] ms = CreateDpfFile(dataPathsNew);
+        byte[] data = CreateDpfFile(dataPathsNew);
+        WriteDataFile(data);
         return true;
+    }
+    /// <summary>
+    /// Removes the first matching datapath from the list ignores Prior Paths
+    /// </summary>
+    /// <param name="s"></param>
+    /// <returns></returns>
+    public static bool TryRemoveDataPath(string s)
+    {
+        List<DataPath> dataPaths = new(GetDataPaths(ReadDataFile()));
+        for (int i = 0; i < dataPaths.Count; i++)
+        {
+            string sourcePath = dataPaths[i].GetSourcePath();
+            if(sourcePath.Length == s.Length || sourcePath.Length == s.Length+1){
+                if(s[0] == dataPaths[i].Drive && sourcePath.StartsWith(s)){
+                    //Found
+                    dataPaths.RemoveAt(i);
+                    byte[] data = CreateDpfFile(dataPaths.ToArray());
+                    WriteDataFile(data);
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public static DataPath[] GetDataPaths(byte[] buffer)
@@ -105,6 +133,10 @@ public class DataPathFile
         try
         {
             File.WriteAllBytes(DATA_PATH_FILE_TEMP, buffer);
+            if (File.Exists(DATA_PATH_FILE))
+            {
+                File.Delete(DATA_PATH_FILE);
+            }
             File.Move(DATA_PATH_FILE_TEMP, DATA_PATH_FILE);
             File.Delete(DATA_PATH_FILE_TEMP);
         }
@@ -117,7 +149,14 @@ public class DataPathFile
     {
         try
         {
-            return File.ReadAllBytes(DATA_PATH_FILE);
+            if (File.Exists(DATA_PATH_FILE))
+            {
+                return File.ReadAllBytes(DATA_PATH_FILE);
+            }
+            else
+            {
+                return [];
+            }
         }
         catch (Exception)
         {

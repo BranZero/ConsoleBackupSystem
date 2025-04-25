@@ -11,11 +11,11 @@ namespace BackupAppTests
             // Arrange
             DataPath[] dataPaths = new DataPath[2];
             dataPaths[0].Drive = 'C';
-            dataPaths[0].Type = 'd';
-            dataPaths[0].Path = "C:\\TestPath1\\SubPath1\\";
+            dataPaths[0].Type = PathType.Directory;
+            dataPaths[0].SourcePath = "C:\\TestPath1\\SubPath1\\";
             dataPaths[1].Drive = 'A';
-            dataPaths[1].Type = 'f';
-            dataPaths[1].Path = "A:\\TestPath2.txt";
+            dataPaths[1].Type = PathType.File;
+            dataPaths[1].SourcePath = "A:\\TestPath2.txt";
 
             // Act
             byte[] data = DataPathFile.CreateDpfFile(dataPaths);
@@ -24,12 +24,12 @@ namespace BackupAppTests
             // Assert
             for (int i = 0; i < dataPaths2.Length; i++)
             {
-                Assert.Multiple(() =>
+                Assert.Multiple((TestDelegate)(() =>
                 {
                     Assert.That(dataPaths[i].Drive, Is.EqualTo(dataPaths2[i].Drive));
                     Assert.That(dataPaths[i].Type, Is.EqualTo(dataPaths2[i].Type));
-                    Assert.That(dataPaths[i].Path, Is.EqualTo(dataPaths2[i].Path));
-                });
+                    Assert.That((string)dataPaths[i].SourcePath, Is.EqualTo((string)dataPaths2[i].SourcePath));
+                }));
             }
             
             // Cleanup
