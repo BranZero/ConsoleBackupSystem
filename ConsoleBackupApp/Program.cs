@@ -42,7 +42,7 @@ public class Program
             case "help":
                 return AppCommands.Help(args).ToString();
             case "version":
-                return AppCommands.Version(args).ToString();
+                return AppCommands.Version(args);
             case "backup":
                 return AppCommands.Backup(args).ToString();
             default:

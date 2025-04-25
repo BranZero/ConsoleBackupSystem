@@ -1,4 +1,5 @@
 
+using System.Reflection;
 using ConsoleBackupApp.DataPaths;
 
 namespace ConsoleBackupApp;
@@ -37,7 +38,7 @@ public class AppCommands
             //-f force is option to overwrite the file if it exists
             index++;
         }
-        else if(optResult == Result.No_Options)
+        else if (optResult == Result.No_Options)
         {
             if (File.Exists(args[index]))
             {
@@ -60,11 +61,11 @@ public class AppCommands
         {
             return optResult;
         }
-        
-        ReadOnlySpan<string> argsLeft = new ReadOnlySpan<string>(args, index, args.Length - index);
-        if(!DataPath.Init(pathType, argsLeft, out DataPath dataPath)) return Result.Invalid_Path;
 
-        if(!DataPathFile.TryAddDataPath(dataPath)) return Result.Exists;
+        ReadOnlySpan<string> argsLeft = new ReadOnlySpan<string>(args, index, args.Length - index);
+        if (!DataPath.Init(pathType, argsLeft, out DataPath dataPath)) return Result.Invalid_Path;
+
+        if (!DataPathFile.TryAddDataPath(dataPath)) return Result.Exists;
 
         return Result.Success;
     }
@@ -77,7 +78,7 @@ public class AppCommands
             Console.WriteLine("Error: no arguments passed in.");
             return Result.No_Arguments;
         }
-        else if(args.Length > 2)
+        else if (args.Length > 2)
         {
             Console.WriteLine("Error: too many arguments passed in.");
             return Result.Too_Many_Arguments;
@@ -87,7 +88,7 @@ public class AppCommands
             return Result.Invalid_Option;
         }
         //no options
-        if(DataPathFile.TryRemoveDataPath(args[1]))
+        if (DataPathFile.TryRemoveDataPath(args[1]))
         {
             return Result.Success;
         }
@@ -99,9 +100,16 @@ public class AppCommands
         throw new NotImplementedException();
     }
 
-    internal static object Version(string[] args)
+    internal static string Version(string[] args)
     {
-        throw new NotImplementedException();
+        var assembly = System.AppContext.BaseDirectory;
+        if (assembly == null || !File.Exists(assembly))
+        {
+            return "Error: Can't retrieve the version number.";
+        }
+        var versionInfo = System.Diagnostics.FileVersionInfo.GetVersionInfo(assembly);
+        string version = $"{versionInfo.FileMajorPart}.{versionInfo.FileMinorPart}.{versionInfo.FileBuildPart}";
+        return version;
     }
 
     internal static object Backup(string[] args)
@@ -119,8 +127,8 @@ public class AppCommands
     {
         options = new HashSet<char>();
         if (string.IsNullOrEmpty(input)) return Result.No_Options;
-        if(input.Length < 2) return Result.No_Options;
-        if(input[0] != '-') return Result.No_Options;
+        if (input.Length < 2) return Result.No_Options;
+        if (input[0] != '-') return Result.No_Options;
 
         for (int i = 1; i < input.Length; i++) // Start from the second character
         {
