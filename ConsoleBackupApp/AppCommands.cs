@@ -95,6 +95,60 @@ public class AppCommands
         return Result.Failure;
     }
 
+    internal static object Backup(string[] args)
+    {
+        int index = 1;
+        if (args.Length < 2)
+        { // Check if their are arguments passed in
+            Console.WriteLine("Error: no arguments passed in.");
+            return Result.No_Arguments;
+        }
+
+        //Select Options
+        bool checkPriorBackups = false;
+        bool checkForBackupsInFolder = false;
+        Result optResult = CheckOptions(args[index], out HashSet<char> options);
+        if (optResult == Result.Valid_Option)
+        {
+            checkPriorBackups = options.Remove('n');
+            checkForBackupsInFolder = options.Remove('c');
+            index++;
+            if (options.Count > 0)
+            {
+                return Result.Invalid_Option;
+            }
+        }
+        else if (optResult != Result.No_Options)
+        {
+            return optResult;
+        }
+
+        //Check Backup Directory
+        if (Directory.Exists(args[index]))
+        {
+            if (args[index][^1] != Path.DirectorySeparatorChar)
+            {
+                args[index] += Path.DirectorySeparatorChar;
+            }
+        }
+        else
+        {
+            return Result.Invalid_Path;
+        }
+
+        //Check Prior Backups if Checked
+        List<string> priorBackups = new List<string>();
+        if(checkForBackupsInFolder)
+        {
+            if(BackupSystem.TryFindPriorBackupPathsInDirectory(args[index], out priorBackups))
+            {
+
+            }
+        }
+
+        throw new NotImplementedException();
+    }
+
     internal static object Help(string[] args)
     {
         throw new NotImplementedException();
@@ -110,11 +164,6 @@ public class AppCommands
         var versionInfo = System.Diagnostics.FileVersionInfo.GetVersionInfo(assembly);
         string version = $"{versionInfo.FileMajorPart}.{versionInfo.FileMinorPart}.{versionInfo.FileBuildPart}";
         return version;
-    }
-
-    internal static object Backup(string[] args)
-    {
-        throw new NotImplementedException();
     }
 
     internal static void List(string[] args)
