@@ -6,7 +6,8 @@ public struct DataPath : IComparable<DataPath>
     public char Drive;
     public char Type;
     public string Path;
-    public string[] IgnorePaths;
+    public string[]? IgnorePaths;
+
     public DataPath(BinaryReader reader)
     {
         Drive = reader.ReadChar();
@@ -42,14 +43,26 @@ public struct DataPath : IComparable<DataPath>
     {
         writer.Write(Drive);
         writer.Write(Type);
-        writer.Write((byte)IgnorePaths.Length);
+        writer.Write((byte)(IgnorePaths?.Length ?? 0));
         writer.Write((ushort)Path.Length);
         writer.Write(System.Text.Encoding.UTF8.GetBytes(Path));
 
+        if (IgnorePaths == null) return;
         foreach (var item in IgnorePaths)
         {
             writer.Write((ushort)item.Length);
             writer.Write(System.Text.Encoding.UTF8.GetBytes(item));
         }
+    }
+
+    public readonly int ToDataRowSize()
+    {
+        int size = 5 + Path.Length;
+        if (IgnorePaths == null) return size;
+        foreach (string ignorePath in IgnorePaths)
+        {
+            size += 2 + ignorePath.Length;
+        }
+        return size;
     }
 }

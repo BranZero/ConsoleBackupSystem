@@ -39,6 +39,11 @@ public class AppCommands
     {
         throw new NotImplementedException();
     }
+
+    internal static object List(string[] args)
+    {
+        throw new NotImplementedException();
+    }
 }
 
 
