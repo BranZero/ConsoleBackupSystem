@@ -9,10 +9,12 @@ public class BackupSystem
     /// <param name="priorBackups"></param>
     /// <param name="folderPath"></param>
     /// <returns>true if an error occured during this process</returns>
-    public static bool TryFindPriorBackupPathsInDirectory(string backupDir, out List<string> priorBackupPaths)
+    public static void FindPriorBackupPathsInDirectory(string backupDir, List<string> priorBackupPaths)
     {
-        //Directory has already been check
-        priorBackupPaths = new List<string>();
+        if (!Directory.Exists(backupDir))
+        {
+            return;
+        }
         try
         {
             DirectoryInfo directoryInfo = new(backupDir);
@@ -33,8 +35,6 @@ public class BackupSystem
             //Log Error
             throw;
         }
-
-        return priorBackupPaths.Count != 0;
     }
 
     internal static bool IsPriorBackup(DirectoryInfo dir)
@@ -71,5 +71,15 @@ public class BackupSystem
             count++;
         }
         return backupDir + temp + Path.DirectorySeparatorChar;
+    }
+
+    internal static void FindPriorBackupPathsByArgs(ReadOnlySpan<string> argsLeft, List<string> priorBackupPaths)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static bool BackupData(string backupDir, List<string> priorBackups)
+    {
+        throw new NotImplementedException();
     }
 }

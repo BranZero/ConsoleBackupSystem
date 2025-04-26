@@ -24,13 +24,15 @@ public class AppCommands
         if (args.Length < 2)
         { // Check if their are arguments passed in
             Console.WriteLine("Error: no arguments passed in.");
-            return Result.No_Arguments;
+            return Result.Too_Few_Arguments;
         }
 
         PathType pathType = PathType.Unknown;
         Result optResult = CheckOptions(args[index], out HashSet<char> options);
         if (optResult == Result.Valid_Option)
         {
+            //TODO: Add Copy Mode for all sub folders on this path
+
             if (!options.Contains('f') || options.Count != 1)//only one valid option
             {
                 return Result.Invalid_Option;
@@ -63,7 +65,7 @@ public class AppCommands
         }
 
         ReadOnlySpan<string> argsLeft = new ReadOnlySpan<string>(args, index, args.Length - index);
-        if (!DataPath.Init(pathType, argsLeft, out DataPath dataPath)) return Result.Invalid_Path;
+        if (!DataPath.Init(pathType, CopyMode.None, argsLeft, out DataPath dataPath)) return Result.Invalid_Path;
 
         if (!DataPathFile.TryAddDataPath(dataPath)) return Result.Exists;
 
@@ -76,7 +78,7 @@ public class AppCommands
         if (args.Length < 2)
         { // Check if their are arguments passed in
             Console.WriteLine("Error: no arguments passed in.");
-            return Result.No_Arguments;
+            return Result.Too_Few_Arguments;
         }
         else if (args.Length > 2)
         {
@@ -95,22 +97,22 @@ public class AppCommands
         return Result.Failure;
     }
 
-    internal static object Backup(string[] args)
+    internal static Result Backup(string[] args)
     {
         int index = 1;
         if (args.Length < 2)
         { // Check if their are arguments passed in
             Console.WriteLine("Error: no arguments passed in.");
-            return Result.No_Arguments;
+            return Result.Too_Few_Arguments;
         }
 
         //Select Options
-        bool checkPriorBackups = false;
+        bool checkSecondaryPriorBackups = false;
         bool checkForBackupsInFolder = false;
         Result optResult = CheckOptions(args[index], out HashSet<char> options);
         if (optResult == Result.Valid_Option)
         {
-            checkPriorBackups = options.Remove('n');
+            checkSecondaryPriorBackups = options.Remove('n');
             checkForBackupsInFolder = options.Remove('c');
             index++;
             if (options.Count > 0)
@@ -124,11 +126,12 @@ public class AppCommands
         }
 
         //Check Backup Directory
-        if (Directory.Exists(args[index]))
+        string backupDir = args[index];
+        if (Directory.Exists(backupDir)) //TODO: build directory to this folder if doesn't exist already
         {
-            if (args[index][^1] != Path.DirectorySeparatorChar)
+            if (backupDir[^1] != Path.DirectorySeparatorChar)
             {
-                args[index] += Path.DirectorySeparatorChar;
+                backupDir += Path.DirectorySeparatorChar;
             }
         }
         else
@@ -138,15 +141,27 @@ public class AppCommands
 
         //Check Prior Backups if Checked
         List<string> priorBackups = new List<string>();
-        if(checkForBackupsInFolder)
+        if (checkForBackupsInFolder)
         {
-            if(BackupSystem.TryFindPriorBackupPathsInDirectory(args[index], out priorBackups))
-            {
-
-            }
+            //Check in same folder as destination path
+            BackupSystem.FindPriorBackupPathsInDirectory(backupDir, priorBackups);
         }
-
-        throw new NotImplementedException();
+        if (checkSecondaryPriorBackups)
+        {
+            index++;
+            if (args.Length <= index)
+            {
+                return Result.Too_Few_Arguments;
+            }
+            ReadOnlySpan<string> argsLeft = new ReadOnlySpan<string>(args, index, args.Length - index);
+            BackupSystem.FindPriorBackupPathsByArgs(argsLeft, priorBackups);
+        }
+        if (!BackupSystem.BackupData(backupDir, priorBackups))//if priorBackups is empty don't check prior backups
+        {
+            return Result.Failure;
+        }
+        
+        return Result.Success;
     }
 
     internal static object Help(string[] args)
@@ -216,7 +231,8 @@ public enum Result
     Error,
     Exists,
 
-    No_Arguments,
+    //Argument Issues
+    Too_Few_Arguments,
     Too_Many_Arguments,
 
     //Options
