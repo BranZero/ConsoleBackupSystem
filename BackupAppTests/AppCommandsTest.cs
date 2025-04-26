@@ -22,7 +22,7 @@ namespace BackupAppTests
             var result = AppCommands.Add(args);
 
             // Assert
-            Assert.That(result, Is.EqualTo(Result.No_Arguments));
+            Assert.That(result, Is.EqualTo(Result.Too_Few_Arguments));
         }
 
         [Test]
@@ -47,7 +47,7 @@ namespace BackupAppTests
             {
                 File.Delete(DataPathFile.DATA_PATH_FILE);
             }
-            DataPath.Init(PathType.Directory, new ReadOnlySpan<string>(args, 2,1), out DataPath dataPath);
+            DataPath.Init(PathType.Directory, CopyMode.None, new ReadOnlySpan<string>(args, 2, 1), out DataPath dataPath);
             int expectedFileSize = DataPathFile.HEADER_SIZE + dataPath.ToDataRowSize();
 
             // Act
@@ -71,7 +71,7 @@ namespace BackupAppTests
             {
                 File.Delete(DataPathFile.DATA_PATH_FILE);
             }
-            DataPath.Init(PathType.Directory, new ReadOnlySpan<string>(args, 2,1), out DataPath dataPath);
+            DataPath.Init(PathType.Directory, CopyMode.None, new ReadOnlySpan<string>(args, 2, 1), out DataPath dataPath);
             int expectedFileSize = DataPathFile.HEADER_SIZE + dataPath.ToDataRowSize();
 
             // Act
@@ -95,7 +95,7 @@ namespace BackupAppTests
             {
                 File.Delete(DataPathFile.DATA_PATH_FILE);
             }
-            DataPath.Init(PathType.Directory, new ReadOnlySpan<string>(args, 2,2), out DataPath dataPath);
+            DataPath.Init(PathType.Directory, CopyMode.None, new ReadOnlySpan<string>(args, 2, 2), out DataPath dataPath);
             int expectedFileSize = DataPathFile.HEADER_SIZE + dataPath.ToDataRowSize();
 
             // Act
@@ -139,7 +139,7 @@ namespace BackupAppTests
             var result = AppCommands.Remove(args);
 
             // Assert
-            Assert.That(result, Is.EqualTo(Result.No_Arguments));
+            Assert.That(result, Is.EqualTo(Result.Too_Few_Arguments));
         }
 
         [Test]
