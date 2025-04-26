@@ -75,7 +75,22 @@ public class BackupSystem
 
     internal static void FindPriorBackupPathsByArgs(ReadOnlySpan<string> argsLeft, List<string> priorBackupPaths)
     {
-        throw new NotImplementedException();
+        for(int i = 0; i < argsLeft.Length; i++){
+            string path = argsLeft[i];
+            if(path[^1] != Path.DirectorySeparatorChar){
+                path += Path.DirectorySeparatorChar;
+            }
+            //check if adding prior paths if path was already added
+            if(priorBackupPaths.Contains(path)){
+                continue;
+            }
+            if(!Directory.Exists(path)){
+                
+                //exit early with Result Invalid Secondary Path
+                return;
+            }
+            priorBackupPaths.Add(path);
+        }
     }
 
     internal static bool BackupData(string backupDir, List<string> priorBackups)
