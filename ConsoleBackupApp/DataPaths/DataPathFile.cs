@@ -59,6 +59,12 @@ public class DataPathFile
         return false;
     }
 
+    public static DataPath[] GetDataPaths()
+    {
+        byte[] data = ReadDataFile();
+        return GetDataPaths(data);
+    }
+
     public static DataPath[] GetDataPaths(byte[] buffer)
     {
         using MemoryStream ms = new MemoryStream(buffer);

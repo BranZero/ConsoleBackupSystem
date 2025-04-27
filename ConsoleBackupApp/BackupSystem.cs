@@ -1,6 +1,9 @@
 
 
 
+using ConsoleBackupApp.DataPaths;
+using ConsoleBackupApp.Logging;
+
 public class BackupSystem
 {
     /// <summary>
@@ -30,9 +33,9 @@ public class BackupSystem
                 priorBackupPaths.Add(path);
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            //Log Error
+            Logger.Log(LogLevel.Error, ex.Message);
             throw;
         }
     }
@@ -95,6 +98,8 @@ public class BackupSystem
 
     internal static bool BackupData(string backupDir, List<string> priorBackups)
     {
+        DataPathFile.GetDataPaths();
+        Directory.CreateDirectory(backupDir);
         throw new NotImplementedException();
     }
 }
