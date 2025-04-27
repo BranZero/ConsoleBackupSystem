@@ -1,18 +1,9 @@
 
-using System.Reflection;
 using ConsoleBackupApp.DataPaths;
 
 namespace ConsoleBackupApp;
 public class AppCommands
 {
-    public static void Exit(string[] args)
-    {
-        if (args.Length != 1)
-        {
-            return;
-        }
-        Environment.Exit(0);
-    }
 
     /// <summary>
     /// Support only adding one path at a time and ignore paths after it

@@ -1,10 +1,12 @@
-﻿
+﻿using ConsoleBackupApp.Logging;
 
 namespace ConsoleBackupApp;
 public class Program
 {
+    private static readonly CancellationTokenSource _loggerToken = new();
     public static void Main(string[] args)
     {
+        Task.Run(() => Logger.ProcessLogQueue(_loggerToken.Token));
         if (args.Length > 0)
         {
             Command(args);
@@ -33,7 +35,7 @@ public class Program
         switch (args[0].ToLower())
         {
             case "exit":
-                AppCommands.Exit(args);
+                Exit(args);
                 return "Closing";
             case "add":
                 return AppCommands.Add(args).ToString();
@@ -51,5 +53,14 @@ public class Program
             default:
                 return "Invalid Command";
         }
+    }
+    public static void Exit(string[] args)
+    {
+        if (args.Length != 1)
+        {
+            return;
+        }
+        _loggerToken.CancelAsync();
+        Environment.Exit(0);
     }
 }
