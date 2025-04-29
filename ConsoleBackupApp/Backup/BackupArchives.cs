@@ -7,8 +7,6 @@ public class BackupArchives
     private ZipArchive _zipArchive;
     private Mutex _mutex;
 
-
-
     public BackupArchives(string folderPath, char drive)
     {
         _mutex = new();
@@ -34,7 +32,7 @@ public class BackupArchives
         _mutex.WaitOne();
         try
         {
-            _zipArchive.CreateEntryFromFile(filePath, entryName, CompressionLevel.Optimal);
+            _zipArchive.CreateEntryFromFile(filePath, entryName, CompressionLevel.SmallestSize);
         }
         finally
         {

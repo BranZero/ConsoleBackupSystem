@@ -147,12 +147,8 @@ public class AppCommands
             ReadOnlySpan<string> argsLeft = new ReadOnlySpan<string>(args, index, args.Length - index);
             BackupSystem.FindPriorBackupPathsByArgs(argsLeft, priorBackups);
         }
-        if (!BackupSystem.BackupData(backupDir, priorBackups))//if priorBackups is empty don't check prior backups
-        {
-            return Result.Failure;
-        }
-        
-        return Result.Success;
+        return BackupSystem.BackupData(backupDir, priorBackups);//if priorBackups is empty don't check prior backups
+
     }
 
     internal static object Help(string[] args)

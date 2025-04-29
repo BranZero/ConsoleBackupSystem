@@ -1,6 +1,8 @@
 
 
 
+using ConsoleBackupApp;
+using ConsoleBackupApp.Backup;
 using ConsoleBackupApp.DataPaths;
 using ConsoleBackupApp.Logging;
 
@@ -96,10 +98,21 @@ public class BackupSystem
         }
     }
 
-    internal static bool BackupData(string backupDir, List<string> priorBackups)
+    internal static Result BackupData(string backupDir, List<string> priorBackups)
     {
-        DataPathFile.GetDataPaths();
-        Directory.CreateDirectory(backupDir);
-        throw new NotImplementedException();
+        DataPath[] dataPaths = DataPathFile.GetDataPaths();
+        BackupController controller = new BackupController(backupDir, dataPaths, priorBackups);
+        try
+        {
+            Directory.CreateDirectory(backupDir);
+            controller.Start();
+        }
+        catch (System.Exception)
+        {
+            
+            throw;
+            //return error and clean up
+        }
+        return Result.Success;
     }
 }
