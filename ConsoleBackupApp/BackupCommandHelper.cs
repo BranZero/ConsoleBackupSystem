@@ -6,7 +6,8 @@ using ConsoleBackupApp.Backup;
 using ConsoleBackupApp.DataPaths;
 using ConsoleBackupApp.Logging;
 
-public class BackupSystem
+namespace ConsoleBackupApp;
+public class BackupCommandHelper
 {
     /// <summary>
     /// Add all priorbackups in backup folderPath

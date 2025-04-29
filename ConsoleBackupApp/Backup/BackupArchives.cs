@@ -2,6 +2,10 @@
 
 using System.IO.Compression;
 namespace ConsoleBackupApp.Backup;
+
+/// <summary>
+/// Consumer of 
+/// </summary>
 public class BackupArchives
 {
     private ZipArchive _zipArchive;

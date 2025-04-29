@@ -135,7 +135,7 @@ public class AppCommands
         if (checkForBackupsInFolder)
         {
             //Check in same folder as destination path
-            BackupSystem.FindPriorBackupPathsInDirectory(backupDir, priorBackups);
+            BackupCommandHelper.FindPriorBackupPathsInDirectory(backupDir, priorBackups);
         }
         if (checkSecondaryPriorBackups)
         {
@@ -145,9 +145,9 @@ public class AppCommands
                 return Result.Too_Few_Arguments;
             }
             ReadOnlySpan<string> argsLeft = new ReadOnlySpan<string>(args, index, args.Length - index);
-            BackupSystem.FindPriorBackupPathsByArgs(argsLeft, priorBackups);
+            BackupCommandHelper.FindPriorBackupPathsByArgs(argsLeft, priorBackups);
         }
-        return BackupSystem.BackupData(backupDir, priorBackups);//if priorBackups is empty don't check prior backups
+        return BackupCommandHelper.BackupData(backupDir, priorBackups);//if priorBackups is empty don't check prior backups
 
     }
 
