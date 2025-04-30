@@ -1,5 +1,3 @@
-
-
 namespace ConsoleBackupApp.Backup;
 public struct BackupStat
 {

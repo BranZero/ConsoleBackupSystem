@@ -9,22 +9,26 @@ public class BackupController
     private string[] _priorBackups;
     private readonly string _folderPath;
     private BackupStat _backupStats;
-    private char[] _drives;
-    private Thread[] _threads;
+    private HashSet<BackupArchives> _backupArchives;
+    private List<BackupProcess> _backupProcesses;
 
     public BackupController(string folderPath, DataPath[] dataPaths, List<string> priorBackups)
     {
         _folderPath = folderPath;
         _priorBackups = priorBackups.ToArray();
         _backupStats = new BackupStat();
+        _backupProcesses = new();
+
+        //Load datapaths into queue and get all drives
         _dataPaths = new ConcurrentQueue<DataPath>();
-        HashSet<char> driveLetters = new();
+        _backupArchives = new HashSet<BackupArchives>();
         foreach(var dataPath in dataPaths)
         {
             _dataPaths.Enqueue(dataPath);
-            driveLetters.Add(dataPath.Drive);
+            _backupArchives.Add(new BackupArchives(_folderPath,dataPath.Drive));
         }
-        _drives = driveLetters.ToArray();
+
+
     }
     public Result Start()
     {
