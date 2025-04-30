@@ -25,8 +25,14 @@ public class BackupArchives
         Drive = drive;
     }
 
+    /// <summary>
+    /// Starts the internal thread and create a zip file and accepts more parts to be copied now
+    /// </summary>
+    /// <param name="folderPath"></param>
+    /// <param name="cancellationToken"></param>
     public void Start(string folderPath, CancellationToken cancellationToken)
     {
+        _writeMutex.WaitOne();
         _cancellationToken = cancellationToken;
 
         string zipFile = folderPath + Drive + ".zip";
@@ -41,6 +47,10 @@ public class BackupArchives
         {
             //TODO: log error and exit
             return;
+        }
+        finally
+        {
+            _writeMutex.ReleaseMutex();
         }
     }
 
@@ -61,17 +71,22 @@ public class BackupArchives
             AddFile(fullPath, zipPath);
         }
     }
-
+    /// <summary>
+    /// Add files to the queue be included in the archive
+    /// </summary>
+    /// <param name="filePath"></param>
+    /// <param name="entryName"></param>
+    /// <exception cref="NullReferenceException"></exception>
     private void AddFile(string filePath, string entryName)
     {
-        if (_zipArchive is null)
-        {
-            //TODO: Log Error from that class not running start yet
-            throw new NullReferenceException();
-        }
         _writeMutex.WaitOne();
         try
         {
+            if (_zipArchive is null)
+            {
+                //TODO: Log Error from that class not running start yet
+                throw new NullReferenceException();
+            }
             _zipArchive.CreateEntryFromFile(filePath, entryName, COMPRESSION_LEVEL);
         }
         catch
@@ -91,7 +106,7 @@ public class BackupArchives
             _consumer?.Join();
 
             _writeMutex.WaitOne();
-            _zipArchive?.Dispose(); 
+            _zipArchive?.Dispose();
         }
         catch
         {
