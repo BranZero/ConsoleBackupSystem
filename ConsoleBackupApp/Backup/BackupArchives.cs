@@ -1,7 +1,6 @@
 
 
 using System.Collections.Concurrent;
-using System.Diagnostics.CodeAnalysis;
 using System.IO.Compression;
 namespace ConsoleBackupApp.Backup;
 
@@ -11,45 +10,97 @@ namespace ConsoleBackupApp.Backup;
 public class BackupArchives
 {
     private const CompressionLevel COMPRESSION_LEVEL = CompressionLevel.SmallestSize;
-    private Queue<string> _pathsToCopy;
+    private ConcurrentQueue<string> _pathsToCopy;
     private ZipArchive? _zipArchive;
     private CancellationToken _cancellationToken;
-    private Semaphore _semaphore;
-    private Mutex _mutex;
+    private Mutex _writeMutex;
     private Thread? _consumer;
     public readonly char Drive;
 
-    public BackupArchives(string folderPath, char drive)
+    public BackupArchives(char drive)
     {
-        _mutex = new();
-        _semaphore = new(0,10);
-        _pathsToCopy = new Queue<string>();
+        _writeMutex = new();
+
+        _pathsToCopy = new ConcurrentQueue<string>();
         Drive = drive;
+    }
+
+    public void Start(string folderPath, CancellationToken cancellationToken)
+    {
+        _cancellationToken = cancellationToken;
+
+        string zipFile = folderPath + Drive + ".zip";
+        try
+        {
+            //Create the zip file
+            _zipArchive = ZipFile.Open(zipFile, ZipArchiveMode.Create);
+            _consumer = new Thread(Consumer);
+            _consumer.Start();
+        }
+        catch (Exception)
+        {
+            //TODO: log error and exit
+            return;
+        }
+    }
+
+    public void InsertPath(string fullPath)
+    {
+        _pathsToCopy.Enqueue(fullPath);
+    }
+
+    private void Consumer()
+    {
+        while (!_cancellationToken.IsCancellationRequested)
+        {
+            if (!_pathsToCopy.TryDequeue(out string? fullPath) || fullPath is null)
+            {
+                continue;
+            }
+            string zipPath = fullPath[3..];
+            AddFile(fullPath, zipPath);
+        }
     }
 
     private void AddFile(string filePath, string entryName)
     {
-        _mutex.WaitOne();
+        if (_zipArchive is null)
+        {
+            //TODO: Log Error from that class not running start yet
+            throw new NullReferenceException();
+        }
+        _writeMutex.WaitOne();
         try
         {
             _zipArchive.CreateEntryFromFile(filePath, entryName, COMPRESSION_LEVEL);
         }
+        catch
+        {
+            //TODO: Log Error
+        }
         finally
         {
-            _mutex.ReleaseMutex();
+            _writeMutex.ReleaseMutex();
         }
     }
 
     public void Close()
     {
-        _mutex.WaitOne();
         try
         {
-            _zipArchive.Dispose();
+            _consumer?.Join();
+
+            _writeMutex.WaitOne();
+            _zipArchive?.Dispose(); 
+        }
+        catch
+        {
+            //TODO: Log Error
         }
         finally
         {
-            _mutex.ReleaseMutex();
+            _writeMutex.ReleaseMutex();
         }
+        _writeMutex.Close();
     }
 }

@@ -25,7 +25,7 @@ public class BackupController
         foreach(var dataPath in dataPaths)
         {
             _dataPaths.Enqueue(dataPath);
-            _backupArchives.Add(new BackupArchives(_folderPath,dataPath.Drive));
+            _backupArchives.Add(new BackupArchives(dataPath.Drive));
         }
 
 
