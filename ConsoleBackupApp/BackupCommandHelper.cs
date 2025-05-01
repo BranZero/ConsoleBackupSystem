@@ -101,8 +101,44 @@ public class BackupCommandHelper
 
     internal static Result BackupData(string backupDir, List<string> priorBackups)
     {
-        DataPath[] dataPaths = DataPathFile.GetDataPaths();
-        BackupController controller = new BackupController(backupDir, dataPaths, priorBackups);
+        List<DataPath> dataPaths = new(DataPathFile.GetDataPaths());
+
+        //Check if path currently exists in current files
+        foreach (DataPath dataPath in dataPaths)
+        {
+            string sourcePath = dataPath.GetSourcePath();
+            if(dataPath.Type == PathType.File)
+            {
+                if (!File.Exists(sourcePath))
+                {
+                    Console.WriteLine(LogLevel.Warning + $": Can't locate file: {sourcePath}");
+                    dataPaths.Remove(dataPath);
+                }
+            }
+            else if(dataPath.Type == PathType.Directory)
+            {
+                if (!Directory.Exists(sourcePath))
+                {
+                    Console.WriteLine(LogLevel.Warning + $": Can't locate folder: {sourcePath}");
+                    dataPaths.Remove(dataPath);
+                }
+            }
+            else
+            {
+                if (!File.Exists(sourcePath) && !Directory.Exists(sourcePath))
+                {
+                    Console.WriteLine(LogLevel.Warning + $": Can't locate any folder or file at: {sourcePath}");
+                    dataPaths.Remove(dataPath);
+                }
+            }
+        }
+        //exit if there are no dataPaths to be backedup.
+        if (dataPaths.Count == 0)
+        {
+            return Result.Empty;
+        }
+
+        BackupController controller = new BackupController(backupDir, dataPaths.ToArray(), priorBackups);
         try
         {
             Directory.CreateDirectory(backupDir);

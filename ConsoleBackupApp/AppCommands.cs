@@ -214,6 +214,7 @@ public class AppCommands
 public enum Result
 {
     Success,
+    Empty,
     Failure,
     Error,
     Exists,
