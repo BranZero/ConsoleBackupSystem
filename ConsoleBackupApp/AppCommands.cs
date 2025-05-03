@@ -19,19 +19,29 @@ public class AppCommands
         }
 
         PathType pathType = PathType.Unknown;
+        CopyMode copyMode = CopyMode.None;
         Result optResult = CheckOptions(args[index], out HashSet<char> options);
-        if (optResult == Result.Valid_Option)
+        if (optResult == Result.Duplicate_Option)
         {
-            //TODO: Add Copy Mode for all sub folders on this path
+            return optResult;
+        }
+        //CopyMode Checks
+        if (options.Remove('c'))//ForceCopy
+        {
+            copyMode = CopyModeExtensions.MergeCopyMode(copyMode, CopyModeExtensions.FromChar('c'));
+        }
+        if (options.Remove('a'))//AllOrNone
+        {
+            copyMode = CopyModeExtensions.MergeCopyMode(copyMode, CopyModeExtensions.FromChar('a'));
+        }
 
-            if (!options.Contains('f') || options.Count != 1)//only one valid option
-            {
-                return Result.Invalid_Option;
-            }
-            //-f force is option to overwrite the file if it exists
+        //PathType Checks
+        if (options.Remove('f'))
+        {
+            //-f force is option to overwrite the check if it exists in the directory
             index++;
         }
-        else if (optResult == Result.No_Options)
+        else
         {
             if (File.Exists(args[index]))
             {
@@ -50,13 +60,14 @@ public class AppCommands
                 return Result.Invalid_Path;
             }
         }
-        else
+        
+        if (options.Count > 0)
         {
-            return optResult;
+            return Result.Invalid_Option;
         }
 
         ReadOnlySpan<string> argsLeft = new ReadOnlySpan<string>(args, index, args.Length - index);
-        if (!DataPath.Init(pathType, CopyMode.None, argsLeft, out DataPath dataPath)) return Result.Invalid_Path;
+        if (!DataPath.Init(pathType, copyMode, argsLeft, out DataPath dataPath)) return Result.Invalid_Path;
 
         if (!DataPathFile.TryAddDataPath(dataPath)) return Result.Exists;
 
