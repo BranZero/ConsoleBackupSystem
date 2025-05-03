@@ -83,6 +83,7 @@ public class DataPathFile
             return []; //invalid data file
         }
         ushort rows = reader.ReadUInt16();
+        reader.ReadBytes(4);//reserved bytes
 
         //Rows
         DataPath[] dataPaths = new DataPath[rows];
@@ -94,7 +95,7 @@ public class DataPathFile
     }
     /// <summary>
     /// Creates the file data for the .dpf file format<br/>
-    /// Header 4bytes id, 2bytes version, 2bytes count<br/>
+    /// Header 4bytes id, 2bytes version, 2bytes count, 4Bytes reserved<br/>
     /// Data for each DataPath<br/>
     /// format is 1byte Drive, 1Byte Type, 1Byte IgnorePath Count, 2Bytes n Length, nBytes Path, repeating Ignore Paths(Length 2Bytes m Length, mBytes Path Length)
     /// </summary>
@@ -116,6 +117,7 @@ public class DataPathFile
         writer.Write(System.Text.Encoding.UTF8.GetBytes(HEADER_ID));
         writer.Write(VERSION);
         writer.Write((ushort)dataPaths.Length);
+        writer.Write(uint.MinValue);//reserved bytes
 
         //Rows
         foreach (var item in dataPaths)

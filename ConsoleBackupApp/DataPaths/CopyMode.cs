@@ -1,8 +1,9 @@
 namespace ConsoleBackupApp.DataPaths;
-public enum CopyMode
+[Flags]
+public enum CopyMode : byte
 {
     None,
-    ForceCopy = 'f'
+    ForceCopy = 1
 }
 
 public static class CopyModeExtensions
