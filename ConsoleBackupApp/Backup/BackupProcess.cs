@@ -66,15 +66,15 @@ public class BackupProcess
 
     private bool TryGetArchive(char drive, out BackupArchives archive)
     {
-        foreach (BackupArchives backupArchive in _backupArchives)
-        {
-            if (drive == backupArchive.Drive)
-            {
-                archive = backupArchive;
-                return true;
-            }
-        }
-        //TODO: Log Critial
+        // foreach (BackupArchives backupArchive in _backupArchives)
+        // {
+        //     if (drive == backupArchive.Drive)
+        //     {
+        //         archive = backupArchive;
+        //         return true;
+        //     }
+        // }
+        // //TODO: Log Critial
         archive = null;
         return false;
     }

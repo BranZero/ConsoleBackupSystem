@@ -3,7 +3,6 @@ using ConsoleBackupApp.DataPaths;
 
 namespace BackupAppTests
 {
-    [TestFixture]
     public class AppCommandsAddAndRemoveTests
     {
         [SetUp]

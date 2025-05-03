@@ -22,7 +22,7 @@ public class BackupArchives
     }
 
     /// <summary>
-    /// Starts the internal thread and create a zip file and accepts more parts to be copied now
+    /// Create a zip file and accepts more parts to be copied to it through the ArchiveQueue
     /// </summary>
     /// <param name="folderPath"></param>
     /// <param name="cancellationToken">if closed early with get everything from the archiveQueue</param>

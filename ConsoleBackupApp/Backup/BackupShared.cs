@@ -31,4 +31,9 @@ public class ArchiveQueue(char drive)
 {
     public readonly char Drive = drive;
     public readonly BlockingCollection<string> PathsToCopy = new();
+
+    public void InsertPath(string fullPath)
+    {
+        PathsToCopy.Add(fullPath);
+    }
 }
