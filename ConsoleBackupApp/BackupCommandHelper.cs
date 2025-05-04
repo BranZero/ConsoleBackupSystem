@@ -101,44 +101,15 @@ public class BackupCommandHelper
 
     internal static Result BackupData(string backupDir, List<string> priorBackups)
     {
-        List<DataPath> dataPaths = new(DataPathFile.GetDataPaths());
+        List<DataPath> dataPaths = ValidDataPaths();
 
-        //Check if path currently exists in current files
-        foreach (DataPath dataPath in dataPaths)
-        {
-            string sourcePath = dataPath.GetSourcePath();
-            if(dataPath.Type == PathType.File)
-            {
-                if (!File.Exists(sourcePath))
-                {
-                    Console.WriteLine(LogLevel.Warning + $": Can't locate file: {sourcePath}");
-                    dataPaths.Remove(dataPath);
-                }
-            }
-            else if(dataPath.Type == PathType.Directory)
-            {
-                if (!Directory.Exists(sourcePath))
-                {
-                    Console.WriteLine(LogLevel.Warning + $": Can't locate folder: {sourcePath}");
-                    dataPaths.Remove(dataPath);
-                }
-            }
-            else
-            {
-                if (!File.Exists(sourcePath) && !Directory.Exists(sourcePath))
-                {
-                    Console.WriteLine(LogLevel.Warning + $": Can't locate any folder or file at: {sourcePath}");
-                    dataPaths.Remove(dataPath);
-                }
-            }
-        }
         //exit if there are no dataPaths to be backedup.
         if (dataPaths.Count == 0)
         {
             return Result.Empty;
         }
 
-        BackupController controller = new BackupController(backupDir, dataPaths.ToArray(), priorBackups);
+        BackupController controller = new BackupController(backupDir, dataPaths, priorBackups);
         try
         {
             Directory.CreateDirectory(backupDir);
@@ -146,10 +117,63 @@ public class BackupCommandHelper
         }
         catch (System.Exception)
         {
-            
+
             throw;
             //return error and clean up
         }
         return Result.Success;
+    }
+
+    private static List<DataPath> ValidDataPaths()
+    {
+        Queue<DataPath> unCheckedDataPaths = new(DataPathFile.GetDataPaths());
+        List<DataPath> dataPaths = new(unCheckedDataPaths.Count);
+
+        //Check if path currently exists in current files
+        while (unCheckedDataPaths.TryDequeue(out DataPath dataPath))
+        {
+            string sourcePath = dataPath.GetSourcePath();
+            if (dataPath.Type == PathType.File)
+            {
+                if (File.Exists(sourcePath))
+                {
+                    dataPaths.Add(dataPath);
+                }
+                else
+                {
+                    Console.WriteLine(LogLevel.Warning + $": Can't locate file: {sourcePath}");
+                }
+            }
+            else if (dataPath.Type == PathType.Directory)
+            {
+                if (Directory.Exists(sourcePath))
+                {
+                    dataPaths.Add(dataPath);
+                }
+                else
+                {
+                    Console.WriteLine(LogLevel.Warning + $": Can't locate folder: {sourcePath}");
+                }
+            }
+            else //PathType.Unknown
+            {
+                if (File.Exists(sourcePath))
+                {
+                    dataPath.Type = PathType.File;
+                    dataPaths.Add(dataPath);
+                }
+                else if (Directory.Exists(sourcePath))
+                {
+                    dataPath.Type = PathType.Directory;
+                    dataPaths.Add(dataPath);
+                }
+                else
+                {
+                    Console.WriteLine(LogLevel.Warning + $": Can't locate any folder or file at: {sourcePath}");
+                }
+            }
+        }
+
+        return dataPaths;
     }
 }

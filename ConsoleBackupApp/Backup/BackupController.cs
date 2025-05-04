@@ -12,7 +12,7 @@ public class BackupController
     private BackupShared _backupShared;
 
 
-    public BackupController(string folderPath, DataPath[] dataPaths, List<string> priorBackups)
+    public BackupController(string folderPath, List<DataPath> dataPaths, List<string> priorBackups)
     {
         _folderPath = folderPath;
         _priorBackups = priorBackups.ToArray();
@@ -40,19 +40,45 @@ public class BackupController
         _backupShared = new(dataPathsQueue, archiveQueues);
 
         //Create Backup Produces (Processes)
-
+        for (int i = 0; i < _backupArchives.Count*2; i++)//TODO: Change double backup archives
+        {
+            BackupProcess backupProcess = new(_backupShared, _priorBackups);
+            _backupProcesses.Add(backupProcess);
+        }
     }
     public Result Start()
     {
-        CancellationToken cancellationToken = new();
+        CancellationTokenSource cancellationToken = new();
 
         //Start the Consumers (Archives)
+        Stack<Thread> threadsArchive = new();
+        Stack<Thread> threadsProcess = new();
         foreach (var archive in _backupArchives)
         {
-            new Thread(() => archive.Start(_folderPath, cancellationToken)).Start();
+            threadsArchive.Push(new Thread(() => archive.Start(_folderPath, cancellationToken.Token)));
+            threadsArchive.Last().Start();
         }
 
         //Start the Producers (Processes)
+        foreach (var process in _backupProcesses)
+        {
+            threadsArchive.Push(new Thread(() => process.Start(cancellationToken.Token)));
+            threadsArchive.Last().Start();
+        }
+
+        foreach (var process in _backupProcesses)
+        {
+            Thread thread = threadsProcess.Pop();
+            thread.Join();
+        }
+
+        //Request normal finish
+        cancellationToken.Cancel();
+        for (int i = _backupArchives.Count; i > 0; i--)
+        {
+            Thread thread = threadsArchive.Pop();
+            thread.Join();
+        }
 
 
         return Result.Success;

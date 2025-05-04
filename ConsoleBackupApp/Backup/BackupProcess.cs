@@ -8,38 +8,32 @@ namespace ConsoleBackupApp.Backup;
 /// </summary>
 public class BackupProcess
 {
-    private readonly ConcurrentQueue<DataPath> _dataPaths;
-    private readonly BackupArchives[] _backupArchives;
+    private readonly BackupShared _sharedData;
     private CancellationToken _cancellationToken;
-    private Thread? _producer;
+    private string[] _priorBackups;
 
-    public BackupProcess(ref ConcurrentQueue<DataPath> dataPaths, ref BackupArchives[] backupArchives)
+    public BackupProcess(BackupShared backupShared, string[] priorBackups)
     {
-        _dataPaths = dataPaths;
-        _backupArchives = backupArchives;
+        _sharedData = backupShared;
+        _priorBackups = priorBackups;
     }
     public void Start(CancellationToken cancellationToken)
     {
         _cancellationToken = cancellationToken;
-        _producer = new Thread(StartProducing);
-        _producer.Start();
+        Process();
     }
 
-    private void StartProducing()
+
+    private void Process()
     {
-        while (!_dataPaths.IsEmpty)
+        while (!_cancellationToken.IsCancellationRequested)
         {
-            if (_cancellationToken.IsCancellationRequested)
+            if (!_sharedData.TryGetDataPath(out DataPath dataPath))
             {
-                //exit early
+                //none left
                 return;
             }
-            if (!_dataPaths.TryDequeue(out DataPath dataPath))
-            {
-                //Retry
-                continue;
-            }
-            if (!TryGetArchive(dataPath.Drive, out BackupArchives archive))
+            if (!_sharedData.TryGetArchive(dataPath.Drive, out ArchiveQueue? archive) || archive is null)
             {
                 //TODO: Log Error
                 return;
@@ -51,35 +45,55 @@ public class BackupProcess
     /// <summary>
     /// Producers role is to traverse the main systems file tree and get paths to files in that DataPath tree
     /// </summary>
-    private void Producer(ref DataPath dataPath, BackupArchives archive)
+    private void Producer(ref DataPath dataPath, ArchiveQueue archive)
     {
+        if (dataPath.Type == PathType.File)
+        {
+            archive.InsertPath(dataPath.SourcePath);
+        }
         //TODO: Ignore Paths
 
         //TODO: InPrior Backups
 
-        Stack<DirectoryInfo> directories = new();
+
+        Stack<DirectoryInfo> directories = new Stack<DirectoryInfo>();
+        try
+        {
+            directories.Push(new DirectoryInfo(dataPath.GetSourcePath()));
+        }
+        catch (System.Exception)
+        {
+            throw;
+        }
+
         while (directories.Count > 0)
         {
-            
+            DirectoryInfo currentDirectory = directories.Pop();
+
+            try
+            {
+                // queue all files in the current directory
+                foreach (var file in currentDirectory.GetFiles())
+                {
+                    archive.InsertPath(file.FullName);
+                }
+
+                // Push all subdirectories onto the stack
+                foreach (var subDirectory in currentDirectory.GetDirectories())
+                {
+                    directories.Push(subDirectory);
+                }
+            }
+            catch (Exception)
+            {
+                // TODO: Log Errors
+                throw;
+            }
         }
     }
 
-    private bool TryGetArchive(char drive, out BackupArchives archive)
+    public void Close()
     {
-        // foreach (BackupArchives backupArchive in _backupArchives)
-        // {
-        //     if (drive == backupArchive.Drive)
-        //     {
-        //         archive = backupArchive;
-        //         return true;
-        //     }
-        // }
-        // //TODO: Log Critial
-        archive = null;
-        return false;
-    }
-    public async Task Close()
-    {
-        _producer?.Join();
+
     }
 }
