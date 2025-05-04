@@ -31,14 +31,12 @@ public class BackupArchivesTest
 
         // Create test files with content
         _testFiles = new();
-        _testFiles.Add(_testFilesFolder + "File1.txt");
-        FileTools.CreateLargeTestFile(_testFiles.Last());
+        _testFiles.Add(FileTools.CreateLargeTestFile(_testFilesFolder, "File1.txt"));
         string context = "Start:";
         for (int i = 0; i < 16; i++)
         {
             context += Encoding.UTF8.GetString(SHA1.HashData(Encoding.UTF8.GetBytes(context)));
-            _testFiles.Add(_testFilesFolder + $"HashFile{i}.hex");
-            FileTools.CreateTestFile(_testFiles.Last(), context);
+            _testFiles.Add(FileTools.CreateTestFile(_testFilesFolder, $"HashFile{i}.hex", context));
         }
 
     }
