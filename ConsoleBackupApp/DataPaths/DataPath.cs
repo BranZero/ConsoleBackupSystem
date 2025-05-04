@@ -11,12 +11,12 @@ public struct DataPath : IComparable<DataPath>
     public const int ROW_HEADER_SIZE = 6;
     public const int IGNORE_HEADER_SIZE = 2;
 
-    public DataPath(char drive, PathType pathType, CopyMode copyMode, string sourcePath, string[]? ignorePaths = null)
+    public DataPath(PathType pathType, CopyMode copyMode, string sourcePath, string[]? ignorePaths = null)
     {
-        Drive = drive;
+        Drive = sourcePath[0];
         Type = pathType;
         FileCopyMode = copyMode;
-        SourcePath = sourcePath;
+        SourcePath = sourcePath[3..];
         IgnorePaths = ignorePaths;
     }
     public DataPath(BinaryReader reader)

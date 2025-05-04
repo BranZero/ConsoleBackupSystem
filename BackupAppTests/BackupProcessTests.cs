@@ -60,8 +60,8 @@ public class BackupProcessTest
     {
         // Arrange
         Queue<DataPath> dataPathsQueue = new Queue<DataPath>();
-        dataPathsQueue.Enqueue(new DataPath(_currentDrive,PathType.Directory,CopyMode.None, _testDirectories[4]));
-        BackupShared backupShared = new([],_archiveQueues);
+        dataPathsQueue.Enqueue(new DataPath(PathType.Directory,CopyMode.None, _testDirectories[4]));
+        BackupShared backupShared = new(dataPathsQueue,_archiveQueues);
         BackupProcess backupProcess = new(backupShared, []);
 
         // Act
@@ -77,8 +77,8 @@ public class BackupProcessTest
     {
         // Arrange
         Queue<DataPath> dataPathsQueue = new Queue<DataPath>();
-        dataPathsQueue.Enqueue(new DataPath(_currentDrive,PathType.Directory,CopyMode.None, _testDirectories[1] + "adsjh"));
-        BackupShared backupShared = new([],_archiveQueues);
+        dataPathsQueue.Enqueue(new DataPath(PathType.Directory,CopyMode.None, _testDirectories[1] + "adsjh"));
+        BackupShared backupShared = new(dataPathsQueue,_archiveQueues);
         BackupProcess backupProcess = new(backupShared, []);
 
         // Act

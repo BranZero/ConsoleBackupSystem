@@ -49,7 +49,15 @@ public class BackupProcess
     {
         if (dataPath.Type == PathType.File)
         {
-            archive.InsertPath(dataPath.SourcePath);
+            if (File.Exists(dataPath.GetSourcePath()))
+            {
+                archive.InsertPath(dataPath.GetSourcePath());
+            }
+            else
+            {
+                //TODO: Log Error
+            }
+            return;
         }
         //TODO: Ignore Paths
 
@@ -59,7 +67,15 @@ public class BackupProcess
         Stack<DirectoryInfo> directories = new Stack<DirectoryInfo>();
         try
         {
-            directories.Push(new DirectoryInfo(dataPath.GetSourcePath()));
+            if (Directory.Exists(dataPath.GetSourcePath()))
+            {
+                directories.Push(new DirectoryInfo(dataPath.GetSourcePath()));
+            }
+            else
+            {
+                //TODO: Log Error
+                return;
+            }
         }
         catch (System.Exception)
         {
@@ -69,7 +85,6 @@ public class BackupProcess
         while (directories.Count > 0)
         {
             DirectoryInfo currentDirectory = directories.Pop();
-
             try
             {
                 // queue all files in the current directory
