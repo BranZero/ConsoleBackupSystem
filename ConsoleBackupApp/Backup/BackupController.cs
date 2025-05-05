@@ -62,8 +62,8 @@ public class BackupController
         //Start the Producers (Processes)
         foreach (var process in _backupProcesses)
         {
-            threadsArchive.Push(new Thread(() => process.Start(cancellationToken.Token)));
-            threadsArchive.Peek().Start();
+            threadsProcess.Push(new Thread(() => process.Start(cancellationToken.Token)));
+            threadsProcess.Peek().Start();
         }
 
         foreach (var process in _backupProcesses)
