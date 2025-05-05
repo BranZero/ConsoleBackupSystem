@@ -56,14 +56,14 @@ public class BackupController
         foreach (var archive in _backupArchives)
         {
             threadsArchive.Push(new Thread(() => archive.Start(_folderPath, cancellationToken.Token)));
-            threadsArchive.Last().Start();
+            threadsArchive.Peek().Start();
         }
 
         //Start the Producers (Processes)
         foreach (var process in _backupProcesses)
         {
-            threadsArchive.Push(new Thread(() => process.Start(cancellationToken.Token)));
-            threadsArchive.Last().Start();
+            threadsProcess.Push(new Thread(() => process.Start(cancellationToken.Token)));
+            threadsProcess.Peek().Start();
         }
 
         foreach (var process in _backupProcesses)

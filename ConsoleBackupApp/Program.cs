@@ -1,4 +1,5 @@
-﻿using ConsoleBackupApp.Logging;
+﻿using System.Text;
+using ConsoleBackupApp.Logging;
 
 namespace ConsoleBackupApp;
 public class Program
@@ -21,11 +22,68 @@ public class Program
             {
                 continue;
             }
-            args = input.Split(' ');
+            args = GetArgs(input);
             string result = Command(args);
             Console.WriteLine(result);
         }
     }
+
+    private static string[] GetArgs(string input)
+    {
+        var args = new List<string>();
+        var currentArg = new StringBuilder();
+        bool singleQuoteBlock = false;
+        bool doubleQuoteBlock = false;
+
+
+        foreach (char c in input)
+        {
+            //Single Quote Block
+            if (c == '\'' && !singleQuoteBlock && !doubleQuoteBlock)
+            {
+                singleQuoteBlock = true;
+                continue;
+            }
+            else if (c == '\'' && singleQuoteBlock)
+            {
+                singleQuoteBlock = false;
+                continue;
+            }
+            //Double Quote Block
+            else if (c == '\"' && !singleQuoteBlock && !doubleQuoteBlock)
+            {
+                singleQuoteBlock = true;
+                continue;
+            }
+            else if (c == '\"' && doubleQuoteBlock)
+            {
+                doubleQuoteBlock = false;
+                continue;
+            }
+
+
+            if (char.IsWhiteSpace(c) && !singleQuoteBlock && !doubleQuoteBlock)
+            {
+                if (currentArg.Length > 0)
+                {
+                    args.Add(currentArg.ToString());
+                    currentArg.Clear();
+                }
+            }
+            else
+            {
+                currentArg.Append(c);
+            }
+        }
+
+        if (currentArg.Length > 0)
+        {
+            args.Add(currentArg.ToString());
+        }
+
+        return args.ToArray();
+    }
+
     public static string Command(string[] args)
     {
         if (args is null || args.Length == 0)
