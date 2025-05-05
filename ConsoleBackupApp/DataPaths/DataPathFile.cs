@@ -10,7 +10,7 @@ public class DataPathFile
     public const string DATA_PATH_FILE_TEMP = @"Data.dpf.tmp";
     public static readonly string HEADER_ID = "DPF" + (char)1;
     public const ushort VERSION = 1;
-    public const ushort HEADER_SIZE = 8;
+    public const ushort HEADER_SIZE = 12;
 
     /// <summary>
     /// Try to add a path to the list of paths to be backedup
@@ -59,6 +59,12 @@ public class DataPathFile
         return false;
     }
 
+    public static DataPath[] GetDataPaths()
+    {
+        byte[] data = ReadDataFile();
+        return GetDataPaths(data);
+    }
+
     public static DataPath[] GetDataPaths(byte[] buffer)
     {
         using MemoryStream ms = new MemoryStream(buffer);
@@ -77,6 +83,7 @@ public class DataPathFile
             return []; //invalid data file
         }
         ushort rows = reader.ReadUInt16();
+        reader.ReadBytes(4);//reserved bytes
 
         //Rows
         DataPath[] dataPaths = new DataPath[rows];
@@ -88,7 +95,7 @@ public class DataPathFile
     }
     /// <summary>
     /// Creates the file data for the .dpf file format<br/>
-    /// Header 4bytes id, 2bytes version, 2bytes count<br/>
+    /// Header 4bytes id, 2bytes version, 2bytes count, 4Bytes reserved<br/>
     /// Data for each DataPath<br/>
     /// format is 1byte Drive, 1Byte Type, 1Byte IgnorePath Count, 2Bytes n Length, nBytes Path, repeating Ignore Paths(Length 2Bytes m Length, mBytes Path Length)
     /// </summary>
@@ -110,6 +117,7 @@ public class DataPathFile
         writer.Write(System.Text.Encoding.UTF8.GetBytes(HEADER_ID));
         writer.Write(VERSION);
         writer.Write((ushort)dataPaths.Length);
+        writer.Write(uint.MinValue);//reserved bytes
 
         //Rows
         foreach (var item in dataPaths)

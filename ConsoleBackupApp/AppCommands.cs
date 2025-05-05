@@ -1,18 +1,9 @@
 
-using System.Reflection;
 using ConsoleBackupApp.DataPaths;
 
 namespace ConsoleBackupApp;
 public class AppCommands
 {
-    public static void Exit(string[] args)
-    {
-        if (args.Length != 1)
-        {
-            return;
-        }
-        Environment.Exit(0);
-    }
 
     /// <summary>
     /// Support only adding one path at a time and ignore paths after it
@@ -24,21 +15,33 @@ public class AppCommands
         if (args.Length < 2)
         { // Check if their are arguments passed in
             Console.WriteLine("Error: no arguments passed in.");
-            return Result.No_Arguments;
+            return Result.Too_Few_Arguments;
         }
 
         PathType pathType = PathType.Unknown;
+        CopyMode copyMode = CopyMode.None;
         Result optResult = CheckOptions(args[index], out HashSet<char> options);
-        if (optResult == Result.Valid_Option)
+        if (optResult == Result.Duplicate_Option)
         {
-            if (!options.Contains('f') || options.Count != 1)//only one valid option
-            {
-                return Result.Invalid_Option;
-            }
-            //-f force is option to overwrite the file if it exists
+            return optResult;
+        }
+        //CopyMode Checks
+        if (options.Remove('c'))//ForceCopy
+        {
+            copyMode = CopyModeExtensions.MergeCopyMode(copyMode, CopyModeExtensions.FromChar('c'));
+        }
+        if (options.Remove('a'))//AllOrNone
+        {
+            copyMode = CopyModeExtensions.MergeCopyMode(copyMode, CopyModeExtensions.FromChar('a'));
+        }
+
+        //PathType Checks
+        if (options.Remove('f'))
+        {
+            //-f force is option to overwrite the check if it exists in the directory
             index++;
         }
-        else if (optResult == Result.No_Options)
+        else
         {
             if (File.Exists(args[index]))
             {
@@ -57,13 +60,14 @@ public class AppCommands
                 return Result.Invalid_Path;
             }
         }
-        else
+        
+        if (options.Count > 0)
         {
-            return optResult;
+            return Result.Invalid_Option;
         }
 
         ReadOnlySpan<string> argsLeft = new ReadOnlySpan<string>(args, index, args.Length - index);
-        if (!DataPath.Init(pathType, argsLeft, out DataPath dataPath)) return Result.Invalid_Path;
+        if (!DataPath.Init(pathType, copyMode, argsLeft, out DataPath dataPath)) return Result.Invalid_Path;
 
         if (!DataPathFile.TryAddDataPath(dataPath)) return Result.Exists;
 
@@ -76,7 +80,7 @@ public class AppCommands
         if (args.Length < 2)
         { // Check if their are arguments passed in
             Console.WriteLine("Error: no arguments passed in.");
-            return Result.No_Arguments;
+            return Result.Too_Few_Arguments;
         }
         else if (args.Length > 2)
         {
@@ -95,6 +99,69 @@ public class AppCommands
         return Result.Failure;
     }
 
+    internal static Result Backup(string[] args)
+    {
+        int index = 1;
+        if (args.Length < 2)
+        { // Check if their are arguments passed in
+            Console.WriteLine("Error: no arguments passed in.");
+            return Result.Too_Few_Arguments;
+        }
+
+        //Select Options
+        bool checkSecondaryPriorBackups = false;
+        bool checkForBackupsInFolder = false;
+        Result optResult = CheckOptions(args[index], out HashSet<char> options);
+        if (optResult == Result.Valid_Option)
+        {
+            checkSecondaryPriorBackups = options.Remove('n');
+            checkForBackupsInFolder = options.Remove('c');
+            index++;
+            if (options.Count > 0)
+            {
+                return Result.Invalid_Option;
+            }
+        }
+        else if (optResult != Result.No_Options)
+        {
+            return optResult;
+        }
+
+        //Check Backup Directory
+        string backupDir = args[index];
+        if (Directory.Exists(backupDir)) //TODO: build directory to this folder if doesn't exist already
+        {
+            if (backupDir[^1] != Path.DirectorySeparatorChar)
+            {
+                backupDir += Path.DirectorySeparatorChar;
+            }
+        }
+        else
+        {
+            return Result.Invalid_Path;
+        }
+
+        //Check Prior Backups if Checked
+        List<string> priorBackups = new List<string>();
+        if (checkForBackupsInFolder)
+        {
+            //Check in same folder as destination path
+            BackupCommandHelper.FindPriorBackupPathsInDirectory(backupDir, priorBackups);
+        }
+        if (checkSecondaryPriorBackups)
+        {
+            index++;
+            if (args.Length <= index)
+            {
+                return Result.Too_Few_Arguments;
+            }
+            ReadOnlySpan<string> argsLeft = new ReadOnlySpan<string>(args, index, args.Length - index);
+            BackupCommandHelper.FindPriorBackupPathsByArgs(argsLeft, priorBackups);
+        }
+        return BackupCommandHelper.BackupData(backupDir, priorBackups);//if priorBackups is empty don't check prior backups
+
+    }
+
     internal static object Help(string[] args)
     {
         throw new NotImplementedException();
@@ -110,11 +177,6 @@ public class AppCommands
         var versionInfo = System.Diagnostics.FileVersionInfo.GetVersionInfo(assembly);
         string version = $"{versionInfo.FileMajorPart}.{versionInfo.FileMinorPart}.{versionInfo.FileBuildPart}";
         return version;
-    }
-
-    internal static object Backup(string[] args)
-    {
-        throw new NotImplementedException();
     }
 
     internal static void List(string[] args)
@@ -163,11 +225,13 @@ public class AppCommands
 public enum Result
 {
     Success,
+    Empty,
     Failure,
     Error,
     Exists,
 
-    No_Arguments,
+    //Argument Issues
+    Too_Few_Arguments,
     Too_Many_Arguments,
 
     //Options
