@@ -10,7 +10,7 @@ public class DataPathFile
     public const string DATA_PATH_FILE_TEMP = @"Data.dpf.tmp";
     public static readonly string HEADER_ID = "DPF" + (char)1;
     public const ushort VERSION = 1;
-    public const ushort HEADER_SIZE = 8;
+    public const ushort HEADER_SIZE = 12;
 
     /// <summary>
     /// Try to add a path to the list of paths to be backedup

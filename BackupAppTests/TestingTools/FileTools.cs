@@ -107,7 +107,7 @@ public static class FileTools
         for (int i = 0; i < 4; i++)
         {
             context += Encoding.UTF8.GetString(SHA256.HashData(Encoding.UTF8.GetBytes(context2)));
-            testFiles.Add(CreateTestFile(sub2, $"HashFile{i}.hex", context2));
+            testFiles.Add(CreateTestFile(sub6, $"HashFile{i}.hex", context2));
         }
 
         return testFiles;
