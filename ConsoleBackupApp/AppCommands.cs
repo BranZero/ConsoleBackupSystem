@@ -69,7 +69,7 @@ public class AppCommands
         ReadOnlySpan<string> argsLeft = new ReadOnlySpan<string>(args, index, args.Length - index);
         if (!DataPath.Init(pathType, copyMode, argsLeft, out DataPath dataPath)) return Result.Invalid_Path;
 
-        if (!DataPathFile.TryAddDataPath(dataPath)) return Result.Exists;
+        if (!DataPathFile.TryAddDataPath(dataPath)) return Result.SubPath_Or_SamePath;
 
         return Result.Success;
     }
@@ -228,7 +228,7 @@ public enum Result
     Empty,
     Failure,
     Error,
-    Exists,
+    SubPath_Or_SamePath,
 
     //Argument Issues
     Too_Few_Arguments,
