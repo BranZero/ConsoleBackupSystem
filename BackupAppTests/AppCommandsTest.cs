@@ -4,17 +4,30 @@ using ConsoleBackupApp.DataPaths;
 namespace BackupAppTests;
 public class AppCommandsAddAndRemoveTests
 {
-    [SetUp]
+    [OneTimeSetUp]
     public void Setup()
     {
         // Setup code if needed
+        if (File.Exists(DataPathFile.DATA_PATH_FILE))
+        {
+            File.Delete(DataPathFile.DATA_PATH_FILE);
+        }
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        if (File.Exists(DataPathFile.DATA_PATH_FILE))
+        {
+            File.Delete(DataPathFile.DATA_PATH_FILE);
+        }
     }
 
     [Test]
     public void Add_NoArguments_ReturnsNoArguments()
     {
         // Arrange
-        string[] args = new string[0];
+        string[] args = [];
 
         // Act
         var result = AppCommands.Add(args);
@@ -41,10 +54,7 @@ public class AppCommandsAddAndRemoveTests
     {
         // Arrange
         string[] args = { "add", "-f", "C:\\ValidFile.txt" };
-        if (File.Exists(DataPathFile.DATA_PATH_FILE))
-        {
-            File.Delete(DataPathFile.DATA_PATH_FILE);
-        }
+
         DataPath.Init(PathType.Directory, CopyMode.None, new ReadOnlySpan<string>(args, 2, 1), out DataPath dataPath);
         int expectedFileSize = DataPathFile.HEADER_SIZE + dataPath.ToDataRowSize();
 
@@ -55,9 +65,22 @@ public class AppCommandsAddAndRemoveTests
         // Assert
         Assert.That(result, Is.EqualTo(Result.Success));
         Assert.That(fileInfo.Length, Is.EqualTo(expectedFileSize));
+    }
 
-        // Cleanup
-        File.Delete(DataPathFile.DATA_PATH_FILE);
+    [Test]
+    public void Add_CopyMode()
+    {
+        // Arrange
+        string[] args = { "add", "-fc", "C:\\ValidFile.txt" };
+
+        // Act
+        var result = AppCommands.Add(args);
+        DataPath[] dataPaths = DataPathFile.GetDataPaths();
+
+        // Assert
+        Assert.That(result, Is.EqualTo(Result.Success));
+        Assert.That(dataPaths, Has.Length.EqualTo(1));
+        Assert.That(dataPaths[0].FileCopyMode, Is.EqualTo(CopyMode.ForceCopy));
     }
 
     [Test]
@@ -65,10 +88,7 @@ public class AppCommandsAddAndRemoveTests
     {
         // Arrange
         string[] args = { "add", "-f", "C:\\ValidDirectory\\" };
-        if (File.Exists(DataPathFile.DATA_PATH_FILE))
-        {
-            File.Delete(DataPathFile.DATA_PATH_FILE);
-        }
+
         DataPath.Init(PathType.Directory, CopyMode.None, new ReadOnlySpan<string>(args, 2, 1), out DataPath dataPath);
         int expectedFileSize = DataPathFile.HEADER_SIZE + dataPath.ToDataRowSize();
 
@@ -79,9 +99,6 @@ public class AppCommandsAddAndRemoveTests
         // Assert
         Assert.That(result, Is.EqualTo(Result.Success));
         Assert.That(fileInfo.Length, Is.EqualTo(expectedFileSize));
-
-        // Cleanup
-        File.Delete(DataPathFile.DATA_PATH_FILE);
     }
 
     [Test]
@@ -89,23 +106,17 @@ public class AppCommandsAddAndRemoveTests
     {
         // Arrange
         string[] args = { "add", "-f", "C:\\ValidDirectory\\", "C:\\ValidDirectory\\bin\\" };
-        if (File.Exists(DataPathFile.DATA_PATH_FILE))
-        {
-            File.Delete(DataPathFile.DATA_PATH_FILE);
-        }
-        DataPath.Init(PathType.Directory, CopyMode.None, new ReadOnlySpan<string>(args, 2, 2), out DataPath dataPath);
-        int expectedFileSize = DataPathFile.HEADER_SIZE + dataPath.ToDataRowSize();
 
         // Act
         var result = AppCommands.Add(args);
-        FileInfo fileInfo = new FileInfo(DataPathFile.DATA_PATH_FILE);
+        DataPath[] dataPaths = DataPathFile.GetDataPaths();
 
         // Assert
         Assert.That(result, Is.EqualTo(Result.Success));
-        Assert.That(fileInfo.Length, Is.EqualTo(expectedFileSize));
+        Assert.That(dataPaths, Has.Length.EqualTo(1));
+        Assert.That(dataPaths[0].IgnorePaths, Has.Length.EqualTo(1));
+        Assert.That(dataPaths[0].IgnorePaths[0], Is.EqualTo("C:\\ValidDirectory\\bin\\"));
 
-        // Cleanup
-        File.Delete(DataPathFile.DATA_PATH_FILE);
     }
 
     [Test]
@@ -113,10 +124,6 @@ public class AppCommandsAddAndRemoveTests
     {
         // Arrange
         string[] args = { "add", "-f", "C:\\ExistingPath\\" };
-        if (File.Exists(DataPathFile.DATA_PATH_FILE))
-        {
-            File.Delete(DataPathFile.DATA_PATH_FILE);
-        }
 
         // Act
         var result = AppCommands.Add(args);
@@ -124,14 +131,47 @@ public class AppCommandsAddAndRemoveTests
 
         // Assert
         Assert.That(result, Is.EqualTo(Result.Success));
-        Assert.That(result2, Is.EqualTo(Result.Exists));
+        Assert.That(result2, Is.EqualTo(Result.SubPath_Or_SamePath));
+    }
+
+    [Test]
+    public void Add_DuplicatePaths_ReturnsExists()
+    {
+        // Arrange
+        string[] args = { "add", "-f", "C:\\ExistingPath\\" };
+        string[] args2 = { "add", "-f", "C:\\ExistingPath\\" };
+
+
+        // Act
+        var result = AppCommands.Add(args);
+        var result2 = AppCommands.Add(args);
+
+        // Assert
+        Assert.That(result, Is.EqualTo(Result.Success));
+        Assert.That(result2, Is.EqualTo(Result.SubPath_Or_SamePath));
+    }
+
+    [Test]
+    public void Add_SubPath_ReturnsExists()
+    {
+        // Arrange
+        string[] args = { "add", "-f", "C:\\ExistingPath\\"};
+        string[] args2 = { "add", "-f", "C:\\ExistingPath\\SubFile.txt " };
+
+        // Act
+        var result = AppCommands.Add(args);
+        var result2 = AppCommands.Add(args);
+
+        // Assert
+        Assert.That(result, Is.EqualTo(Result.Success));
+        Assert.That(result2, Is.EqualTo(Result.SubPath_Or_SamePath));
     }
 
     [Test]
     public void Remove_NoArguments_ReturnsNoArguments()
     {
         // Arrange
-        string[] args = new string[0];
+        string[] args = [];
 
         // Act
         var result = AppCommands.Remove(args);
@@ -185,10 +225,6 @@ public class AppCommandsAddAndRemoveTests
         // Arrange
         string[] args = { "remove", "-f", "C:\\ExistingPath\\" };
         string[] args2 = { "remove", "C:\\ExistingPath\\" };
-        if (File.Exists(DataPathFile.DATA_PATH_FILE))
-        {
-            File.Delete(DataPathFile.DATA_PATH_FILE);
-        }
 
         // Act
         var result = AppCommands.Add(args);

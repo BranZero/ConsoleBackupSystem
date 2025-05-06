@@ -25,14 +25,15 @@ public class AppCommands
         {
             return optResult;
         }
-        //CopyMode Checks
+
+        //CopyMode Checks (Mutually Exclusive)
         if (options.Remove('c'))//ForceCopy
         {
-            copyMode = CopyModeExtensions.MergeCopyMode(copyMode, CopyModeExtensions.FromChar('c'));
+            copyMode = CopyModeExtensions.FromChar('c');
         }
-        if (options.Remove('a'))//AllOrNone
+        else if (options.Remove('a'))//AllOrNone
         {
-            copyMode = CopyModeExtensions.MergeCopyMode(copyMode, CopyModeExtensions.FromChar('a'));
+            copyMode = CopyModeExtensions.FromChar('a');
         }
 
         //PathType Checks
@@ -69,7 +70,7 @@ public class AppCommands
         ReadOnlySpan<string> argsLeft = new ReadOnlySpan<string>(args, index, args.Length - index);
         if (!DataPath.Init(pathType, copyMode, argsLeft, out DataPath dataPath)) return Result.Invalid_Path;
 
-        if (!DataPathFile.TryAddDataPath(dataPath)) return Result.Exists;
+        if (!DataPathFile.TryAddDataPath(dataPath)) return Result.SubPath_Or_SamePath;
 
         return Result.Success;
     }
@@ -228,7 +229,7 @@ public enum Result
     Empty,
     Failure,
     Error,
-    Exists,
+    SubPath_Or_SamePath,
 
     //Argument Issues
     Too_Few_Arguments,

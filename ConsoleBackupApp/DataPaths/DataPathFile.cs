@@ -20,10 +20,12 @@ public class DataPathFile
     public static bool TryAddDataPath(DataPath dataPath)
     {
         DataPath[] dataPaths = GetDataPaths(ReadDataFile());
+        string sourcePath = dataPath.GetSourcePath();
         //Check if exists
         foreach (var item in dataPaths)
         {
-            if (item.CompareTo(dataPath) == 0)
+            string fullPath = item.GetSourcePath();
+            if (fullPath.StartsWith(sourcePath) || sourcePath.StartsWith(fullPath))
             {
                 return false;
             }
