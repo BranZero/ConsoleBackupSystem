@@ -48,6 +48,15 @@ public class BackupController
     }
     public Result Start()
     {
+        if (_backupShared.DataPathsIsEmpty())
+        {
+            return Result.Empty;
+        }
+        if (!SetupBackupDirectory(_folderPath))
+        {
+            return Result.Error;
+        }
+
         CancellationTokenSource cancellationToken = new();
 
         //Start the Consumers (Archives)
@@ -82,5 +91,18 @@ public class BackupController
 
 
         return Result.Success;
+    }
+
+    private bool SetupBackupDirectory(string path)
+    {
+        try
+        {
+            DirectoryInfo directoryInfo = Directory.CreateDirectory(path);
+            return directoryInfo.Exists;
+        }
+        catch (System.Exception)
+        {
+            return false;
+        }
     }
 }

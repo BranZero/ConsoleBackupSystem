@@ -23,6 +23,14 @@ public class BackupShared
         _archiveQueues = archiveQueues;
     }
 
+    public bool DataPathsIsEmpty()
+    {
+        _dataPathMutex.WaitOne();
+        bool result = _dataPaths.Count == 0;
+        _dataPathMutex.ReleaseMutex();
+        return result;
+    } 
+
     public bool TryGetDataPath(out DataPath dataPath)
     {
         _dataPathMutex.WaitOne();

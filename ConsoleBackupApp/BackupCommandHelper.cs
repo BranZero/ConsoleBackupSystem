@@ -43,7 +43,7 @@ public class BackupCommandHelper
         }
     }
 
-    internal static bool IsPriorBackup(DirectoryInfo dir)
+    public static bool IsPriorBackup(DirectoryInfo dir)
     {
         if (!dir.Name.StartsWith("Backup_")) return false;
         if (!char.IsNumber(dir.Name[^1])) return false;
@@ -63,7 +63,7 @@ public class BackupCommandHelper
         return true;
     }
 
-    internal static string FindBackupPathName(string backupDir)
+    public static string FindBackupPathName(string backupDir)
     {
         DateTime dateTime = DateTime.Now;
         backupDir += $"Backup_{dateTime.Month}_{dateTime.Day}_{dateTime.Year}";
