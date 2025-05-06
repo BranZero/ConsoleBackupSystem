@@ -65,9 +65,6 @@ public class AppCommandsAddAndRemoveTests
         // Assert
         Assert.That(result, Is.EqualTo(Result.Success));
         Assert.That(fileInfo.Length, Is.EqualTo(expectedFileSize));
-
-        // Cleanup
-        File.Delete(DataPathFile.DATA_PATH_FILE);
     }
 
     [Test]
@@ -86,9 +83,6 @@ public class AppCommandsAddAndRemoveTests
         // Assert
         Assert.That(result, Is.EqualTo(Result.Success));
         Assert.That(fileInfo.Length, Is.EqualTo(expectedFileSize));
-
-        // Cleanup
-        File.Delete(DataPathFile.DATA_PATH_FILE);
     }
 
     [Test]
@@ -107,9 +101,6 @@ public class AppCommandsAddAndRemoveTests
         // Assert
         Assert.That(result, Is.EqualTo(Result.Success));
         Assert.That(fileInfo.Length, Is.EqualTo(expectedFileSize));
-
-        // Cleanup
-        File.Delete(DataPathFile.DATA_PATH_FILE);
     }
 
     [Test]

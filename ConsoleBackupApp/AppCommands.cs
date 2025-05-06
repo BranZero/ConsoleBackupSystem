@@ -25,14 +25,15 @@ public class AppCommands
         {
             return optResult;
         }
-        //CopyMode Checks
+
+        //CopyMode Checks (Mutually Exclusive)
         if (options.Remove('c'))//ForceCopy
         {
-            copyMode = CopyModeExtensions.MergeCopyMode(copyMode, CopyModeExtensions.FromChar('c'));
+            copyMode = CopyModeExtensions.FromChar('c');
         }
-        if (options.Remove('a'))//AllOrNone
+        else if (options.Remove('a'))//AllOrNone
         {
-            copyMode = CopyModeExtensions.MergeCopyMode(copyMode, CopyModeExtensions.FromChar('a'));
+            copyMode = CopyModeExtensions.FromChar('a');
         }
 
         //PathType Checks

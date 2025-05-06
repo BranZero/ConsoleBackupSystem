@@ -1,5 +1,7 @@
 namespace ConsoleBackupApp.DataPaths;
-[Flags]
+
+
+//Mutually Exclusive options
 public enum CopyMode : byte
 {
     None = 0,
@@ -17,9 +19,5 @@ public static class CopyModeExtensions
             'a' => CopyMode.AllOrNone,
             _ => CopyMode.None,
         };
-    }
-    public static CopyMode MergeCopyMode(CopyMode a, CopyMode b)
-    {
-        return a ^ b;
     }
 }
