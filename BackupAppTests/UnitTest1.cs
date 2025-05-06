@@ -11,21 +11,6 @@ public class Tests
     }
 
     [Test]
-    public void AddTest()
-    {
-        string result = AppCommands.Add(null).ToString();
-
-
-        Assert.That(result, Is.EqualTo("Failure"));
-    }
-
-    [Test]
-    public void RemoveTest()
-    {
-        
-    }
-
-    [Test]
     public void BackupTest()
     {
         

@@ -1,28 +1,165 @@
 
+using ConsoleBackupApp.DataPaths;
+
 namespace ConsoleBackupApp;
 public class AppCommands
 {
-    public static void Exit(string[] args)
-    {
-        if (args.Length != 1)
-        {
-            return;
-        }
-        Environment.Exit(0);
-    }
 
     /// <summary>
-    /// Support only adding one path at a time and add it to the data file
+    /// Support only adding one path at a time and ignore paths after it
     /// </summary>
     /// <param name="args"></param>
     public static Result Add(string[] args)
     {
-        return Result.Failure;
+        int index = 1;
+        if (args.Length < 2)
+        { // Check if their are arguments passed in
+            Console.WriteLine("Error: no arguments passed in.");
+            return Result.Too_Few_Arguments;
+        }
+
+        PathType pathType = PathType.Unknown;
+        CopyMode copyMode = CopyMode.None;
+        Result optResult = CheckOptions(args[index], out HashSet<char> options);
+        if (optResult == Result.Duplicate_Option)
+        {
+            return optResult;
+        }
+        //CopyMode Checks
+        if (options.Remove('c'))//ForceCopy
+        {
+            copyMode = CopyModeExtensions.MergeCopyMode(copyMode, CopyModeExtensions.FromChar('c'));
+        }
+        if (options.Remove('a'))//AllOrNone
+        {
+            copyMode = CopyModeExtensions.MergeCopyMode(copyMode, CopyModeExtensions.FromChar('a'));
+        }
+
+        //PathType Checks
+        if (options.Remove('f'))
+        {
+            //-f force is option to overwrite the check if it exists in the directory
+            index++;
+        }
+        else
+        {
+            if (File.Exists(args[index]))
+            {
+                pathType = PathType.File;
+            }
+            else if (Directory.Exists(args[index]))
+            {
+                pathType = PathType.Directory;
+                if (args[index][^1] != Path.DirectorySeparatorChar)
+                {
+                    args[index] += Path.DirectorySeparatorChar;
+                }
+            }
+            else
+            {
+                return Result.Invalid_Path;
+            }
+        }
+        
+        if (options.Count > 0)
+        {
+            return Result.Invalid_Option;
+        }
+
+        ReadOnlySpan<string> argsLeft = new ReadOnlySpan<string>(args, index, args.Length - index);
+        if (!DataPath.Init(pathType, copyMode, argsLeft, out DataPath dataPath)) return Result.Invalid_Path;
+
+        if (!DataPathFile.TryAddDataPath(dataPath)) return Result.Exists;
+
+        return Result.Success;
     }
 
     public static Result Remove(string[] args)
     {
+        int index = 1;
+        if (args.Length < 2)
+        { // Check if their are arguments passed in
+            Console.WriteLine("Error: no arguments passed in.");
+            return Result.Too_Few_Arguments;
+        }
+        else if (args.Length > 2)
+        {
+            Console.WriteLine("Error: too many arguments passed in.");
+            return Result.Too_Many_Arguments;
+        }
+        if (CheckOptions(args[index], out _) != Result.No_Options)
+        {
+            return Result.Invalid_Option;
+        }
+        //no options
+        if (DataPathFile.TryRemoveDataPath(args[1]))
+        {
+            return Result.Success;
+        }
         return Result.Failure;
+    }
+
+    internal static Result Backup(string[] args)
+    {
+        int index = 1;
+        if (args.Length < 2)
+        { // Check if their are arguments passed in
+            Console.WriteLine("Error: no arguments passed in.");
+            return Result.Too_Few_Arguments;
+        }
+
+        //Select Options
+        bool checkSecondaryPriorBackups = false;
+        bool checkForBackupsInFolder = false;
+        Result optResult = CheckOptions(args[index], out HashSet<char> options);
+        if (optResult == Result.Valid_Option)
+        {
+            checkSecondaryPriorBackups = options.Remove('n');
+            checkForBackupsInFolder = options.Remove('c');
+            index++;
+            if (options.Count > 0)
+            {
+                return Result.Invalid_Option;
+            }
+        }
+        else if (optResult != Result.No_Options)
+        {
+            return optResult;
+        }
+
+        //Check Backup Directory
+        string backupDir = args[index];
+        if (Directory.Exists(backupDir)) //TODO: build directory to this folder if doesn't exist already
+        {
+            if (backupDir[^1] != Path.DirectorySeparatorChar)
+            {
+                backupDir += Path.DirectorySeparatorChar;
+            }
+        }
+        else
+        {
+            return Result.Invalid_Path;
+        }
+
+        //Check Prior Backups if Checked
+        List<string> priorBackups = new List<string>();
+        if (checkForBackupsInFolder)
+        {
+            //Check in same folder as destination path
+            BackupCommandHelper.FindPriorBackupPathsInDirectory(backupDir, priorBackups);
+        }
+        if (checkSecondaryPriorBackups)
+        {
+            index++;
+            if (args.Length <= index)
+            {
+                return Result.Too_Few_Arguments;
+            }
+            ReadOnlySpan<string> argsLeft = new ReadOnlySpan<string>(args, index, args.Length - index);
+            BackupCommandHelper.FindPriorBackupPathsByArgs(argsLeft, priorBackups);
+        }
+        return BackupCommandHelper.BackupData(backupDir, priorBackups);//if priorBackups is empty don't check prior backups
+
     }
 
     internal static object Help(string[] args)
@@ -30,14 +167,57 @@ public class AppCommands
         throw new NotImplementedException();
     }
 
-    internal static object Version(string[] args)
+    internal static string Version(string[] args)
     {
-        throw new NotImplementedException();
+        var assembly = System.AppContext.BaseDirectory;
+        if (assembly == null || !File.Exists(assembly))
+        {
+            return "Error: Can't retrieve the version number.";
+        }
+        var versionInfo = System.Diagnostics.FileVersionInfo.GetVersionInfo(assembly);
+        string version = $"{versionInfo.FileMajorPart}.{versionInfo.FileMinorPart}.{versionInfo.FileBuildPart}";
+        return version;
     }
 
-    internal static object Backup(string[] args)
+    internal static void List(string[] args)
     {
-        throw new NotImplementedException();
+        if (args.Length != 1)
+        {
+            Console.WriteLine("Error: Too Many Arguments");
+            return;
+        }
+
+        byte[] data = DataPathFile.ReadDataFile();
+        DataPath[] dataPaths = DataPathFile.GetDataPaths(data);
+        if (dataPaths.Length == 0)
+        {
+            Console.WriteLine("List is empty");
+            return;
+        }
+        //Sort the data for easy viewing
+        dataPaths = dataPaths.OrderBy(path => path).ToArray();
+        foreach (var path in dataPaths)
+        {
+            Console.WriteLine("{0,-80}", path.GetSourcePath());
+        }
+    }
+
+
+    public static Result CheckOptions(string input, out HashSet<char> options)
+    {
+        options = new HashSet<char>();
+        if (string.IsNullOrEmpty(input)) return Result.No_Options;
+        if (input.Length < 2) return Result.No_Options;
+        if (input[0] != '-') return Result.No_Options;
+
+        for (int i = 1; i < input.Length; i++) // Start from the second character
+        {
+            if (!options.Add(input[i]))
+            {
+                return Result.Duplicate_Option;
+            }
+        }
+        return Result.Valid_Option;
     }
 }
 
@@ -45,9 +225,19 @@ public class AppCommands
 public enum Result
 {
     Success,
+    Empty,
     Failure,
     Error,
+    Exists,
 
-    InvalidOption,
-    InvalidPath,
+    //Argument Issues
+    Too_Few_Arguments,
+    Too_Many_Arguments,
+
+    //Options
+    Invalid_Option,
+    Duplicate_Option,
+    Valid_Option,
+    No_Options,
+    Invalid_Path,
 }
