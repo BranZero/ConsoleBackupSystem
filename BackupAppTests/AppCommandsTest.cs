@@ -68,6 +68,22 @@ public class AppCommandsAddAndRemoveTests
     }
 
     [Test]
+    public void Add_CopyMode()
+    {
+        // Arrange
+        string[] args = { "add", "-fc", "C:\\ValidFile.txt" };
+
+        // Act
+        var result = AppCommands.Add(args);
+        DataPath[] dataPaths = DataPathFile.GetDataPaths();
+
+        // Assert
+        Assert.That(result, Is.EqualTo(Result.Success));
+        Assert.That(dataPaths, Has.Length.EqualTo(1));
+        Assert.That(dataPaths[0].FileCopyMode, Is.EqualTo(CopyMode.ForceCopy));
+    }
+
+    [Test]
     public void Add_ForceValidDirectoryPath_ReturnsSuccess()
     {
         // Arrange
@@ -91,16 +107,16 @@ public class AppCommandsAddAndRemoveTests
         // Arrange
         string[] args = { "add", "-f", "C:\\ValidDirectory\\", "C:\\ValidDirectory\\bin\\" };
 
-        DataPath.Init(PathType.Directory, CopyMode.None, new ReadOnlySpan<string>(args, 2, 2), out DataPath dataPath);
-        int expectedFileSize = DataPathFile.HEADER_SIZE + dataPath.ToDataRowSize();
-
         // Act
         var result = AppCommands.Add(args);
-        FileInfo fileInfo = new FileInfo(DataPathFile.DATA_PATH_FILE);
+        DataPath[] dataPaths = DataPathFile.GetDataPaths();
 
         // Assert
         Assert.That(result, Is.EqualTo(Result.Success));
-        Assert.That(fileInfo.Length, Is.EqualTo(expectedFileSize));
+        Assert.That(dataPaths, Has.Length.EqualTo(1));
+        Assert.That(dataPaths[0].IgnorePaths, Has.Length.EqualTo(1));
+        Assert.That(dataPaths[0].IgnorePaths[0], Is.EqualTo("C:\\ValidDirectory\\bin\\"));
+
     }
 
     [Test]

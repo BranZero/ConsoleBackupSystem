@@ -24,7 +24,7 @@ public struct DataPath : IComparable<DataPath>
         //header
         Drive = reader.ReadChar();
         Type = PathTypeExtensions.FromChar(reader.ReadChar());
-        FileCopyMode = CopyModeExtensions.FromChar(reader.ReadChar());
+        FileCopyMode = CopyModeExtensions.FromByte(reader.ReadByte());
         int ignorePathCount = reader.ReadByte();
         //n part
         int length = reader.ReadUInt16();
