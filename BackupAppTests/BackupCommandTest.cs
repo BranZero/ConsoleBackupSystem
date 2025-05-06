@@ -126,8 +126,8 @@ public class BackupCommandTest
         });
     }
 
-        [Test]
-    public void BackupTwice_WithIgnorePaths_DataPath()
+    [Test]
+    public void BackupTwice_WithPriorBackups_DataPath()
     {
         // 1st Arrange
         string folder = BackupCommandHelper.FindBackupPathName(_archiveFolder);
@@ -163,6 +163,47 @@ public class BackupCommandTest
             Assert.That(File.Exists(zipPath));
 
             Assert.That(zipArchive.Entries, Has.Count.EqualTo(0)); //Ignore Paths is yet to be implemented
+        });
+    }
+
+    [Test]
+    public void BackupTwice_With_PriorBackups_ForceCopy_DataPath()
+    {
+        // 1st Arrange
+        string folder = BackupCommandHelper.FindBackupPathName(_archiveFolder);
+        string zipPath = Path.Combine(folder, _currentDrive + ".zip");
+
+        List<DataPath> dataPaths = new();
+        dataPaths.Add(new DataPath(PathType.Directory, CopyMode.None, _testDirectories[1]));
+        dataPaths.Add(new DataPath(PathType.Directory, CopyMode.None, _testDirectories[3]));
+        dataPaths.Add(new DataPath(PathType.File, CopyMode.None, _testFiles[0]));
+        dataPaths.Add(new DataPath(PathType.File, CopyMode.ForceCopy, _testFiles[1]));
+        dataPaths.Add(new DataPath(PathType.Directory, CopyMode.None, _testDirectories[2]));
+
+        //1st Act
+        BackupController backupController = new(folder, dataPaths, []);
+        Result result = backupController.Start();
+
+        //2nd Arrange
+        string folder2 = BackupCommandHelper.FindBackupPathName(_archiveFolder);
+        string zipPath2 = Path.Combine(folder, _currentDrive + ".zip");
+        List<string> priorBackups = new();
+        priorBackups.Add(folder);
+
+        //2nd Act
+        BackupController backupController2 = new(folder2, dataPaths, priorBackups);
+        Result result2 = backupController2.Start();
+        using ZipArchive zipArchive = ZipFile.OpenRead(zipPath2);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.EqualTo(Result.Success));
+            Assert.That(Directory.Exists(folder), Is.True);
+            Assert.That(File.Exists(zipPath));
+
+            Assert.That(zipArchive.Entries, Has.Count.EqualTo(1)); //Ignore Paths is yet to be implemented
+            FileTools.TestDoFilesMatch(_testFiles[1], zipPath); //Force Copy is yet to be implemented
         });
     }
 }
