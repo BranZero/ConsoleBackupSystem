@@ -66,7 +66,6 @@ public class BackupProcess
             //None or AllOrNone
             if (!IsInPriorBackups())
             {
-                //TODO: Log Error
                 archive.InsertPath(dataPath.GetSourcePath());
             }
         }
@@ -101,13 +100,11 @@ public class BackupProcess
             {
                 DirectoryInfo currentDirectory = directories.Pop();
                 //Ignore Paths
-                if (ignorePaths.Count != 0)
+                if (IsInIgnorePaths(ignorePaths, currentDirectory.FullName))
                 {
-                    ignorePaths.Contains(currentDirectory.FullName);
                     continue;
                 }
                 // queue all files in the current directory
-                foreach (var file in currentDirectory.GetFiles())
                 if (dataPath.FileCopyMode == CopyMode.ForceCopy)
                 {
                     InsertAll(archive, ignorePaths, currentDirectory);
@@ -117,6 +114,7 @@ public class BackupProcess
                     InsertAllOrNone(archive, ignorePaths, currentDirectory);
                 }
                 else //None
+                {
                     InsertCheckEach(archive, ignorePaths, currentDirectory);
                 }
 
@@ -133,46 +131,55 @@ public class BackupProcess
         }
     }
 
+    private void InsertCheckEach(ArchiveQueue archive, HashSet<string> ignorePaths, DirectoryInfo currentDirectory)
     {
         // queue all files in the current directory
         foreach (FileInfo file in currentDirectory.GetFiles())
         {
             //Ignore Paths
-            if (ignorePaths.Count != 0)
+            if (IsInIgnorePaths(ignorePaths, file.FullName))
             {
-                ignorePaths.Contains(file.FullName);
-                continue;
-            }
-            {
-                archive.InsertPath(file.FullName);
-            }
-    /// </summary>
-    private void InsertAllOrNone(ArchiveQueue archive, HashSet<string> ignorePaths, DirectoryInfo currentDirectory)
-        // queue all files in the current directory
-        {
-            //Ignore Paths
-            if (ignorePaths.Count != 0)
-            {
-                ignorePaths.Contains(file.FullName);
                 continue;
             }
             if (!IsInPriorBackups())
             {
+                archive.InsertPath(file.FullName);
+            }
+        }
+    }
+    /// <summary>
+    /// Inserts all files or none for a given directory but ignores ones that match ignorePaths.
+    /// </summary>
+    private void InsertAllOrNone(ArchiveQueue archive, HashSet<string> ignorePaths, DirectoryInfo currentDirectory)
+    {
+        // queue all files in the current directory
+        foreach (FileInfo file in currentDirectory.GetFiles())
+        {
+            //Ignore Paths
+            if (IsInIgnorePaths(ignorePaths, file.FullName))
+            {
+                continue;
+            }
+            if (!IsInPriorBackups())
+            {
+                InsertAll(archive, ignorePaths, currentDirectory);
+                return;
             }
         }
     }
 
     /// <summary>
     /// Inserts all files in a given directory but ignores ones that match ignorePaths and doesn't check prior backups.
-    private static void InsertAll(ArchiveQueue archive, HashSet<string> ignorePaths, DirectoryInfo currentDirectory)
+    /// </summary>
+    private void InsertAll(ArchiveQueue archive, HashSet<string> ignorePaths, DirectoryInfo currentDirectory)
     {
         // queue all files in the current directory
         foreach (FileInfo file in currentDirectory.GetFiles())
         {
             //Ignore Paths
-            if (ignorePaths.Count != 0)
+            if (IsInIgnorePaths(ignorePaths, file.FullName))
             {
-                ignorePaths.Contains(file.FullName);
+                continue;
             }
 
             archive.InsertPath(file.FullName);
@@ -181,5 +188,12 @@ public class BackupProcess
 
     private bool IsInPriorBackups()
     {
+        //TODO: Check Prior Backups
+        return false;
+    }
+
+    private static bool IsInIgnorePaths(HashSet<string> ignorePaths, string path)
+    {
+        return ignorePaths.Count != 0 && ignorePaths.Contains(path);
     }
 }

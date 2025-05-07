@@ -118,7 +118,7 @@ public struct DataPath : IComparable<DataPath>
         }
         else
         {
-            return new HashSet<string>(IgnorePaths);
+            return [.. IgnorePaths];
         }
     }
 }

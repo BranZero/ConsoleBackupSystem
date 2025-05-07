@@ -173,12 +173,14 @@ public class BackupCommandTest
         string folder = BackupCommandHelper.FindBackupPathName(_archiveFolder);
         string zipPath = Path.Combine(folder, _currentDrive + ".zip");
 
-        List<DataPath> dataPaths = new();
-        dataPaths.Add(new DataPath(PathType.Directory, CopyMode.None, _testDirectories[1]));
-        dataPaths.Add(new DataPath(PathType.Directory, CopyMode.None, _testDirectories[3]));
-        dataPaths.Add(new DataPath(PathType.File, CopyMode.None, _testFiles[0]));
-        dataPaths.Add(new DataPath(PathType.File, CopyMode.ForceCopy, _testFiles[1]));
-        dataPaths.Add(new DataPath(PathType.Directory, CopyMode.None, _testDirectories[2]));
+        List<DataPath> dataPaths =
+        [
+            new DataPath(PathType.Directory, CopyMode.None, _testDirectories[1]),
+            new DataPath(PathType.Directory, CopyMode.None, _testDirectories[3]),
+            new DataPath(PathType.File, CopyMode.None, _testFiles[0]),
+            new DataPath(PathType.File, CopyMode.ForceCopy, _testFiles[1]),
+            new DataPath(PathType.Directory, CopyMode.None, _testDirectories[2]),
+        ];
 
         //1st Act
         BackupController backupController = new(folder, dataPaths, []);
@@ -187,8 +189,7 @@ public class BackupCommandTest
         //2nd Arrange
         string folder2 = BackupCommandHelper.FindBackupPathName(_archiveFolder);
         string zipPath2 = Path.Combine(folder, _currentDrive + ".zip");
-        List<string> priorBackups = new();
-        priorBackups.Add(folder);
+        List<string> priorBackups = [folder];
 
         //2nd Act
         BackupController backupController2 = new(folder2, dataPaths, priorBackups);
@@ -205,5 +206,39 @@ public class BackupCommandTest
             Assert.That(zipArchive.Entries, Has.Count.EqualTo(1)); //Prior Backups is yet to be implemented
             FileTools.TestDoFilesMatch(_testFiles[1], zipPath);
         });
+    }
+
+    [Test]
+    public void Backup_IgnorePaths_DataPath()
+    {
+        // Arrange
+        string folder = BackupCommandHelper.FindBackupPathName(_archiveFolder);
+        string zipPath = Path.Combine(folder, _currentDrive + ".zip");
+
+        List<string> ignorePaths = [
+            _testDirectories[1],
+            _testFiles[0],
+        ];
+
+        List<DataPath> dataPaths = [
+            new DataPath(PathType.Directory, CopyMode.None, _testFilesFolder, ignorePaths.ToArray()),
+        ];
+
+        // Act
+        BackupController backupController = new(folder, dataPaths, []);
+        Result result = backupController.Start();
+        using ZipArchive zipArchive = ZipFile.OpenRead(zipPath);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.EqualTo(Result.Success));
+            Assert.That(Directory.Exists(folder), Is.True);
+            Assert.That(File.Exists(zipPath));
+
+            Assert.That(zipArchive.Entries, Has.Count.EqualTo(6));
+            FileTools.TestDoFilesMatch(_testFiles[1], zipPath);
+        });
+
     }
 }
