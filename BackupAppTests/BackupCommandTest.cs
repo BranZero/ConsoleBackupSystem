@@ -162,7 +162,7 @@ public class BackupCommandTest
             Assert.That(Directory.Exists(folder), Is.True);
             Assert.That(File.Exists(zipPath));
 
-            Assert.That(zipArchive.Entries, Has.Count.EqualTo(0)); //Ignore Paths is yet to be implemented
+            Assert.That(zipArchive.Entries, Has.Count.EqualTo(0)); //Prior Backups is yet to be implemented
         });
     }
 
@@ -202,8 +202,8 @@ public class BackupCommandTest
             Assert.That(Directory.Exists(folder), Is.True);
             Assert.That(File.Exists(zipPath));
 
-            Assert.That(zipArchive.Entries, Has.Count.EqualTo(1)); //Ignore Paths is yet to be implemented
-            FileTools.TestDoFilesMatch(_testFiles[1], zipPath); //Force Copy is yet to be implemented
+            Assert.That(zipArchive.Entries, Has.Count.EqualTo(1)); //Prior Backups is yet to be implemented
+            FileTools.TestDoFilesMatch(_testFiles[1], zipPath);
         });
     }
 }

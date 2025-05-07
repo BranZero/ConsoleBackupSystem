@@ -56,15 +56,18 @@ public class BackupProcess
     }
     private void ProducerFile(ref DataPath dataPath, ArchiveQueue archive)
     {
-        if (dataPath.Type == PathType.File)
+        if (File.Exists(dataPath.GetSourcePath()))
         {
-            if (File.Exists(dataPath.GetSourcePath()))
+            if (dataPath.FileCopyMode == CopyMode.ForceCopy)
             {
                 archive.InsertPath(dataPath.GetSourcePath());
+                return;
             }
-            else
+            //None or AllOrNone
+            if (!IsInPriorBackups())
             {
                 //TODO: Log Error
+                archive.InsertPath(dataPath.GetSourcePath());
             }
         }
         else
@@ -105,8 +108,16 @@ public class BackupProcess
                 }
                 // queue all files in the current directory
                 foreach (var file in currentDirectory.GetFiles())
+                if (dataPath.FileCopyMode == CopyMode.ForceCopy)
                 {
-                    archive.InsertPath(file.FullName);
+                    InsertAll(archive, ignorePaths, currentDirectory);
+                }
+                else if (dataPath.FileCopyMode == CopyMode.AllOrNone)
+                {
+                    InsertAllOrNone(archive, ignorePaths, currentDirectory);
+                }
+                else //None
+                    InsertCheckEach(archive, ignorePaths, currentDirectory);
                 }
 
                 // Push all subdirectories onto the stack
@@ -122,15 +133,53 @@ public class BackupProcess
         }
     }
 
+    {
+        // queue all files in the current directory
+        foreach (FileInfo file in currentDirectory.GetFiles())
+        {
+            //Ignore Paths
+            if (ignorePaths.Count != 0)
             {
-                // TODO: Log Errors
-                throw;
+                ignorePaths.Contains(file.FullName);
+                continue;
+            }
+            {
+                archive.InsertPath(file.FullName);
+            }
+    /// </summary>
+    private void InsertAllOrNone(ArchiveQueue archive, HashSet<string> ignorePaths, DirectoryInfo currentDirectory)
+        // queue all files in the current directory
+        {
+            //Ignore Paths
+            if (ignorePaths.Count != 0)
+            {
+                ignorePaths.Contains(file.FullName);
+                continue;
+            }
+            if (!IsInPriorBackups())
+            {
             }
         }
     }
 
-    public void Close()
+    /// <summary>
+    /// Inserts all files in a given directory but ignores ones that match ignorePaths and doesn't check prior backups.
+    private static void InsertAll(ArchiveQueue archive, HashSet<string> ignorePaths, DirectoryInfo currentDirectory)
     {
+        // queue all files in the current directory
+        foreach (FileInfo file in currentDirectory.GetFiles())
+        {
+            //Ignore Paths
+            if (ignorePaths.Count != 0)
+            {
+                ignorePaths.Contains(file.FullName);
+            }
 
+            archive.InsertPath(file.FullName);
+        }
+    }
+
+    private bool IsInPriorBackups()
+    {
     }
 }
