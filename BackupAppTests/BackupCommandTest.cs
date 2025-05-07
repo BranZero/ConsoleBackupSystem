@@ -52,8 +52,9 @@ public class BackupCommandTest
         string folder = BackupCommandHelper.FindBackupPathName(_archiveFolder);
         string zipPath = Path.Combine(folder, _currentDrive + ".zip");
 
-        List<DataPath> dataPaths = new();
-        dataPaths.Add(new DataPath(PathType.File, CopyMode.None, _testFiles[1]));
+        List<DataPath> dataPaths = [
+            new DataPath(PathType.File, CopyMode.None, _testFiles[1])
+        ];
 
         // Act
         BackupController backupController = new(folder, dataPaths, []);
@@ -79,7 +80,7 @@ public class BackupCommandTest
         string folder = BackupCommandHelper.FindBackupPathName(_archiveFolder);
         string zipPath = Path.Combine(folder, _currentDrive + ".zip");
 
-        List<DataPath> dataPaths = new();
+        List<DataPath> dataPaths = [];
 
         // Act
         BackupController backupController = new(folder, dataPaths, []);
@@ -101,12 +102,14 @@ public class BackupCommandTest
         string folder = BackupCommandHelper.FindBackupPathName(_archiveFolder);
         string zipPath = Path.Combine(folder, _currentDrive + ".zip");
 
-        List<DataPath> dataPaths = new();
-        dataPaths.Add(new DataPath(PathType.Directory, CopyMode.None, _testDirectories[1]));
-        dataPaths.Add(new DataPath(PathType.Directory, CopyMode.None, _testDirectories[3]));
-        dataPaths.Add(new DataPath(PathType.File, CopyMode.None, _testFiles[0]));
-        dataPaths.Add(new DataPath(PathType.File, CopyMode.None, _testFiles[1]));
-        dataPaths.Add(new DataPath(PathType.Directory, CopyMode.None, _testDirectories[2]));
+        List<DataPath> dataPaths =
+        [
+            new DataPath(PathType.Directory, CopyMode.None, _testDirectories[1]),
+            new DataPath(PathType.Directory, CopyMode.None, _testDirectories[3]),
+            new DataPath(PathType.File, CopyMode.None, _testFiles[0]),
+            new DataPath(PathType.File, CopyMode.None, _testFiles[1]),
+            new DataPath(PathType.Directory, CopyMode.None, _testDirectories[2]),
+        ];
 
         // Act
         BackupController backupController = new(folder, dataPaths, []);
@@ -133,12 +136,14 @@ public class BackupCommandTest
         string folder = BackupCommandHelper.FindBackupPathName(_archiveFolder);
         string zipPath = Path.Combine(folder, _currentDrive + ".zip");
 
-        List<DataPath> dataPaths = new();
-        dataPaths.Add(new DataPath(PathType.Directory, CopyMode.None, _testDirectories[1]));
-        dataPaths.Add(new DataPath(PathType.Directory, CopyMode.None, _testDirectories[3]));
-        dataPaths.Add(new DataPath(PathType.File, CopyMode.None, _testFiles[0]));
-        dataPaths.Add(new DataPath(PathType.File, CopyMode.None, _testFiles[1]));
-        dataPaths.Add(new DataPath(PathType.Directory, CopyMode.None, _testDirectories[2]));
+        List<DataPath> dataPaths =
+        [
+            new DataPath(PathType.Directory, CopyMode.None, _testDirectories[1]),
+            new DataPath(PathType.Directory, CopyMode.None, _testDirectories[3]),
+            new DataPath(PathType.File, CopyMode.None, _testFiles[0]),
+            new DataPath(PathType.File, CopyMode.None, _testFiles[1]),
+            new DataPath(PathType.Directory, CopyMode.None, _testDirectories[2]),
+        ];
 
         //1st Act
         BackupController backupController = new(folder, dataPaths, []);
@@ -147,8 +152,7 @@ public class BackupCommandTest
         //2nd Arrange
         string folder2 = BackupCommandHelper.FindBackupPathName(_archiveFolder);
         string zipPath2 = Path.Combine(folder, _currentDrive + ".zip");
-        List<string> priorBackups = new();
-        priorBackups.Add(folder);
+        List<string> priorBackups = [folder];
 
         //2nd Act
         BackupController backupController2 = new(folder2, dataPaths, priorBackups);

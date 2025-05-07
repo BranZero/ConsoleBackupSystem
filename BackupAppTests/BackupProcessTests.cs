@@ -176,8 +176,7 @@ public class BackupProcessTest
     public void Producer_TwoThreads()
     {
         // Arrange
-        Queue<DataPath> dataPathsQueue = new Queue<DataPath>();
-
+        Queue<DataPath> dataPathsQueue = new();
         dataPathsQueue.Enqueue(new DataPath(PathType.Directory, CopyMode.None, _testDirectories[1]));
         dataPathsQueue.Enqueue(new DataPath(PathType.Directory, CopyMode.None, _testDirectories[3]));
         dataPathsQueue.Enqueue(new DataPath(PathType.File, CopyMode.None, _testFiles[0]));
@@ -189,8 +188,8 @@ public class BackupProcessTest
         BackupProcess backupProcess2 = new(backupShared, []);
 
         // Act
-        Thread thread1 = new Thread(() =>backupProcess.Start(_cancellationTokenSource.Token)); //with end if there are no DataPaths left
-        Thread thread2 = new Thread(() =>backupProcess.Start(_cancellationTokenSource.Token)); //with end if there are no DataPaths left
+        Thread thread1 = new(() =>backupProcess.Start(_cancellationTokenSource.Token)); //with end if there are no DataPaths left
+        Thread thread2 = new(() =>backupProcess.Start(_cancellationTokenSource.Token)); //with end if there are no DataPaths left
         thread1.Start();
         thread2.Start();
         thread1.Join();
