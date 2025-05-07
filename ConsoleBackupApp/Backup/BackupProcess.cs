@@ -56,7 +56,7 @@ public class BackupProcess
     }
     private void ProducerFile(ref DataPath dataPath, ArchiveQueue archive)
     {
-        string filePath = dataPath.GetSourcePath();
+        string filePath = dataPath.SourcePath;
         if (File.Exists(filePath))
         {
             if (dataPath.FileCopyMode == CopyMode.ForceCopy)
@@ -87,9 +87,9 @@ public class BackupProcess
         Stack<DirectoryInfo> directories = new Stack<DirectoryInfo>();
         try
         {
-            if (Directory.Exists(dataPath.GetSourcePath()))
+            if (Directory.Exists(dataPath.SourcePath))
             {
-                directories.Push(new DirectoryInfo(dataPath.GetSourcePath()));
+                directories.Push(new DirectoryInfo(dataPath.SourcePath));
             }
             else
             {

@@ -129,13 +129,13 @@ public class BackupCommandHelper
     /// <returns></returns>
     private static List<DataPath> ValidDataPaths()
     {
-        Queue<DataPath> unCheckedDataPaths = new(DataPathFile.GetDataPaths());
+        Queue<DataPath> unCheckedDataPaths = new(DataFileManager.GetDataPaths());
         List<DataPath> dataPaths = new(unCheckedDataPaths.Count);
 
         //Check if path currently exists in current files
         while (unCheckedDataPaths.TryDequeue(out DataPath dataPath))
         {
-            string sourcePath = dataPath.GetSourcePath();
+            string sourcePath = dataPath.SourcePath;
             if (dataPath.Type == PathType.File)
             {
                 if (File.Exists(sourcePath))

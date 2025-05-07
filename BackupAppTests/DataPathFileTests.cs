@@ -9,29 +9,26 @@ namespace BackupAppTests
         public void DataPathReversableTest()
         {
             // Arrange
-            DataPath[] dataPaths = new DataPath[2];
-            dataPaths[0].Drive = 'C';
-            dataPaths[0].Type = PathType.Directory;
-            dataPaths[0].SourcePath = "C:\\TestPath1\\SubPath1\\";
-            dataPaths[1].Drive = 'A';
-            dataPaths[1].Type = PathType.File;
-            dataPaths[1].SourcePath = "A:\\TestPath2.txt";
+            DataPath[] dataPaths = [
+                new DataPath(PathType.Directory, CopyMode.None, "C:\\TestPath1\\SubPath1\\"),
+                new DataPath(PathType.File, CopyMode.None, "A:\\TestPath2.txt"),
+            ];
 
             // Act
-            byte[] data = DataPathFile.CreateDpfFile(dataPaths);
-            DataPath[] dataPaths2 = DataPathFile.GetDataPaths(data);
+            byte[] data = DPF.CreateFile(dataPaths);
+            DataPath[] dataPaths2 = DataFileManager.GetDataPaths();
 
             // Assert
             for (int i = 0; i < dataPaths2.Length; i++)
             {
-                Assert.Multiple((TestDelegate)(() =>
+                Assert.Multiple(() =>
                 {
                     Assert.That(dataPaths[i].Drive, Is.EqualTo(dataPaths2[i].Drive));
                     Assert.That(dataPaths[i].Type, Is.EqualTo(dataPaths2[i].Type));
-                    Assert.That((string)dataPaths[i].SourcePath, Is.EqualTo((string)dataPaths2[i].SourcePath));
-                }));
+                    Assert.That(dataPaths[i].SourcePath, Is.EqualTo(dataPaths2[i].SourcePath));
+                });
             }
-            
+
             // Cleanup
         }
     }
