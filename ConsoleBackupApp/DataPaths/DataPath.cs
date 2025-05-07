@@ -109,4 +109,16 @@ public struct DataPath : IComparable<DataPath>
         }
         return size;
     }
+
+    public HashSet<string> GetIgnorePaths()
+    {
+        if (IgnorePaths == null || IgnorePaths.Length == 0)
+        {
+            return [];//empty
+        }
+        else
+        {
+            return new HashSet<string>(IgnorePaths);
+        }
+    }
 }

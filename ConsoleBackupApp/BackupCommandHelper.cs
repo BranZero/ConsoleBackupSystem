@@ -123,7 +123,10 @@ public class BackupCommandHelper
         }
         return Result.Success;
     }
-
+    /// <summary>
+    /// All DataPath are validated as either a file or directory if that can be located
+    /// </summary>
+    /// <returns></returns>
     private static List<DataPath> ValidDataPaths()
     {
         Queue<DataPath> unCheckedDataPaths = new(DataPathFile.GetDataPaths());

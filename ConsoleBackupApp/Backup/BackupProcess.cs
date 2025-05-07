@@ -39,13 +39,22 @@ public class BackupProcess
                 return;
             }
             //Process DataPath
-            Producer(ref dataPath, archive);
+            if (dataPath.Type == PathType.File)
+            {
+                ProducerFile(ref dataPath, archive);
+            }
+            else if (dataPath.Type == PathType.Directory)
+            {
+                ProducerDirectory(ref dataPath, archive);
+            }
+            else
+            {
+                //TODO: Log Error
+                continue;
+            }
         }
     }
-    /// <summary>
-    /// Producers role is to traverse the main systems file tree and get paths to files in that DataPath tree
-    /// </summary>
-    private void Producer(ref DataPath dataPath, ArchiveQueue archive)
+    private void ProducerFile(ref DataPath dataPath, ArchiveQueue archive)
     {
         if (dataPath.Type == PathType.File)
         {
@@ -57,12 +66,20 @@ public class BackupProcess
             {
                 //TODO: Log Error
             }
-            return;
         }
-        //TODO: Ignore Paths
+        else
+        {
+            //TODO: Log Error
+        }
+    }
 
-        //TODO: InPrior Backups
-
+    /// <summary>
+    /// Producers role is to traverse the main systems file tree and get paths to files in that DataPath tree
+    /// </summary>
+    private void ProducerDirectory(ref DataPath dataPath, ArchiveQueue archive)
+    {
+        //Ignore Paths
+        HashSet<string> ignorePaths = dataPath.GetIgnorePaths();
 
         Stack<DirectoryInfo> directories = new Stack<DirectoryInfo>();
         try
@@ -73,20 +90,19 @@ public class BackupProcess
             }
             else
             {
-                //TODO: Log Error
+                //TODO: Log Error Source Directory Not Found
                 return;
             }
-        }
-        catch (System.Exception)
-        {
-            throw;
-        }
 
-        while (directories.Count > 0)
-        {
-            DirectoryInfo currentDirectory = directories.Pop();
-            try
+            while (directories.Count > 0)
             {
+                DirectoryInfo currentDirectory = directories.Pop();
+                //Ignore Paths
+                if (ignorePaths.Count != 0)
+                {
+                    ignorePaths.Contains(currentDirectory.FullName);
+                    continue;
+                }
                 // queue all files in the current directory
                 foreach (var file in currentDirectory.GetFiles())
                 {
@@ -99,7 +115,13 @@ public class BackupProcess
                     directories.Push(subDirectory);
                 }
             }
-            catch (Exception)
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+
             {
                 // TODO: Log Errors
                 throw;
