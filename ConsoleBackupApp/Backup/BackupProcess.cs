@@ -56,7 +56,7 @@ public class BackupProcess
     }
     private void ProducerFile(ref DataPath dataPath, ArchiveQueue archive)
     {
-        string filePath = dataPath.GetSourcePath();
+        string filePath = dataPath.SourcePath;
         if (File.Exists(filePath))
         {
             if (dataPath.FileCopyMode == CopyMode.ForceCopy)
