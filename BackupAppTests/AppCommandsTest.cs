@@ -8,18 +8,18 @@ public class AppCommandsAddAndRemoveTests
     public void Setup()
     {
         // Setup code if needed
-        if (File.Exists(DataPathFile.DATA_PATH_FILE))
+        if (File.Exists(DataFileManager.DATA_PATH_FILE))
         {
-            File.Delete(DataPathFile.DATA_PATH_FILE);
+            File.Delete(DataFileManager.DATA_PATH_FILE);
         }
     }
 
     [TearDown]
     public void TearDown()
     {
-        if (File.Exists(DataPathFile.DATA_PATH_FILE))
+        if (File.Exists(DataFileManager.DATA_PATH_FILE))
         {
-            File.Delete(DataPathFile.DATA_PATH_FILE);
+            File.Delete(DataFileManager.DATA_PATH_FILE);
         }
     }
 
@@ -56,11 +56,11 @@ public class AppCommandsAddAndRemoveTests
         string[] args = { "add", "-f", "C:\\ValidFile.txt" };
 
         DataPath.Init(PathType.Directory, CopyMode.None, new ReadOnlySpan<string>(args, 2, 1), out DataPath dataPath);
-        int expectedFileSize = DataPathFile.HEADER_SIZE + dataPath.ToDataRowSize();
+        int expectedFileSize = DPF.HEADER_SIZE + DPF.ToDataRowSize(dataPath);
 
         // Act
         var result = AppCommands.Add(args);
-        FileInfo fileInfo = new FileInfo(DataPathFile.DATA_PATH_FILE);
+        FileInfo fileInfo = new FileInfo(DataFileManager.DATA_PATH_FILE);
 
         // Assert
         Assert.That(result, Is.EqualTo(Result.Success));
@@ -75,7 +75,7 @@ public class AppCommandsAddAndRemoveTests
 
         // Act
         var result = AppCommands.Add(args);
-        DataPath[] dataPaths = DataPathFile.GetDataPaths();
+        DataPath[] dataPaths = DataFileManager.GetDataPaths();
 
         // Assert
         Assert.That(result, Is.EqualTo(Result.Success));
@@ -90,11 +90,11 @@ public class AppCommandsAddAndRemoveTests
         string[] args = { "add", "-f", "C:\\ValidDirectory\\" };
 
         DataPath.Init(PathType.Directory, CopyMode.None, new ReadOnlySpan<string>(args, 2, 1), out DataPath dataPath);
-        int expectedFileSize = DataPathFile.HEADER_SIZE + dataPath.ToDataRowSize();
+        int expectedFileSize = DPF.HEADER_SIZE + DPF.ToDataRowSize(dataPath);
 
         // Act
         var result = AppCommands.Add(args);
-        FileInfo fileInfo = new FileInfo(DataPathFile.DATA_PATH_FILE);
+        FileInfo fileInfo = new FileInfo(DataFileManager.DATA_PATH_FILE);
 
         // Assert
         Assert.That(result, Is.EqualTo(Result.Success));
@@ -109,7 +109,7 @@ public class AppCommandsAddAndRemoveTests
 
         // Act
         var result = AppCommands.Add(args);
-        DataPath[] dataPaths = DataPathFile.GetDataPaths();
+        DataPath[] dataPaths = DataFileManager.GetDataPaths();
 
         // Assert
         Assert.That(result, Is.EqualTo(Result.Success));
@@ -229,11 +229,11 @@ public class AppCommandsAddAndRemoveTests
         // Act
         var result = AppCommands.Add(args);
         var result2 = AppCommands.Remove(args2);
-        FileInfo fileInfo = new FileInfo(DataPathFile.DATA_PATH_FILE);
+        FileInfo fileInfo = new FileInfo(DataFileManager.DATA_PATH_FILE);
 
         // Assert
         Assert.That(result, Is.EqualTo(Result.Success));
         Assert.That(result2, Is.EqualTo(Result.Success));
-        Assert.That(fileInfo.Length, Is.EqualTo(DataPathFile.HEADER_SIZE));
+        Assert.That(fileInfo.Length, Is.EqualTo(DPF.HEADER_SIZE));
     }
 }

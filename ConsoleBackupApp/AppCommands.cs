@@ -70,7 +70,7 @@ public class AppCommands
         ReadOnlySpan<string> argsLeft = new ReadOnlySpan<string>(args, index, args.Length - index);
         if (!DataPath.Init(pathType, copyMode, argsLeft, out DataPath dataPath)) return Result.Invalid_Path;
 
-        if (!DataPathFile.TryAddDataPath(dataPath)) return Result.SubPath_Or_SamePath;
+        if (!DataFileManager.TryAddDataPath(dataPath)) return Result.SubPath_Or_SamePath;
 
         return Result.Success;
     }
@@ -93,7 +93,7 @@ public class AppCommands
             return Result.Invalid_Option;
         }
         //no options
-        if (DataPathFile.TryRemoveDataPath(args[1]))
+        if (DataFileManager.TryRemoveDataPath(args[1]))
         {
             return Result.Success;
         }
@@ -188,8 +188,7 @@ public class AppCommands
             return;
         }
 
-        byte[] data = DataPathFile.ReadDataFile();
-        DataPath[] dataPaths = DataPathFile.GetDataPaths(data);
+        DataPath[] dataPaths = DataFileManager.GetDataPaths();
         if (dataPaths.Length == 0)
         {
             Console.WriteLine("List is empty");
@@ -199,7 +198,7 @@ public class AppCommands
         dataPaths = dataPaths.OrderBy(path => path).ToArray();
         foreach (var path in dataPaths)
         {
-            Console.WriteLine("{0,-80}", path.GetSourcePath());
+            Console.WriteLine("{0,-80}", path.SourcePath);
         }
     }
 

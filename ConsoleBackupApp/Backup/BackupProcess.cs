@@ -49,9 +49,9 @@ public class BackupProcess
     {
         if (dataPath.Type == PathType.File)
         {
-            if (File.Exists(dataPath.GetSourcePath()))
+            if (File.Exists(dataPath.SourcePath))
             {
-                archive.InsertPath(dataPath.GetSourcePath());
+                archive.InsertPath(dataPath.SourcePath);
             }
             else
             {
@@ -67,9 +67,9 @@ public class BackupProcess
         Stack<DirectoryInfo> directories = new Stack<DirectoryInfo>();
         try
         {
-            if (Directory.Exists(dataPath.GetSourcePath()))
+            if (Directory.Exists(dataPath.SourcePath))
             {
-                directories.Push(new DirectoryInfo(dataPath.GetSourcePath()));
+                directories.Push(new DirectoryInfo(dataPath.SourcePath));
             }
             else
             {
