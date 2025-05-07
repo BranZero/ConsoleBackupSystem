@@ -40,4 +40,16 @@ public struct DataPath : IComparable<DataPath>
         }
         return SourcePath.CompareTo(other.SourcePath);
     }
+
+    public HashSet<string> GetIgnorePaths()
+    {
+        if (IgnorePaths == null || IgnorePaths.Length == 0)
+        {
+            return [];//empty
+        }
+        else
+        {
+            return [.. IgnorePaths];
+        }
+    }
 }
