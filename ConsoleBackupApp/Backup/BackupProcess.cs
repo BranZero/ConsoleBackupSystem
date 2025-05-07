@@ -56,17 +56,18 @@ public class BackupProcess
     }
     private void ProducerFile(ref DataPath dataPath, ArchiveQueue archive)
     {
-        if (File.Exists(dataPath.GetSourcePath()))
+        string filePath = dataPath.GetSourcePath();
+        if (File.Exists(filePath))
         {
             if (dataPath.FileCopyMode == CopyMode.ForceCopy)
             {
-                archive.InsertPath(dataPath.GetSourcePath());
+                archive.InsertPath(filePath);
                 return;
             }
             //None or AllOrNone
-            if (!IsInPriorBackups())
+            if (!IsInPriorBackups(filePath))
             {
-                archive.InsertPath(dataPath.GetSourcePath());
+                archive.InsertPath(filePath);
             }
         }
         else
@@ -141,7 +142,7 @@ public class BackupProcess
             {
                 continue;
             }
-            if (!IsInPriorBackups())
+            if (!IsInPriorBackups(file.FullName))
             {
                 archive.InsertPath(file.FullName);
             }
@@ -160,7 +161,7 @@ public class BackupProcess
             {
                 continue;
             }
-            if (!IsInPriorBackups())
+            if (!IsInPriorBackups(file.FullName))
             {
                 InsertAll(archive, ignorePaths, currentDirectory);
                 return;
@@ -186,7 +187,7 @@ public class BackupProcess
         }
     }
 
-    private bool IsInPriorBackups()
+    private bool IsInPriorBackups(string fullName)
     {
         //TODO: Check Prior Backups
         return false;
