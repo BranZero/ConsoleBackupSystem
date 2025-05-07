@@ -20,7 +20,7 @@ public struct DataPath : IComparable<DataPath>
     {
         dataPath = default;
         if (args[0].Length < 4) return false;
-        if (!Char.IsAsciiLetterUpper(args[0][0])) return false;
+        if (!char.IsLetter(args[0][0])) return false;
         string sourcePath = args[0];
 
         string[] ignorePaths = new string[args.Length - 1];

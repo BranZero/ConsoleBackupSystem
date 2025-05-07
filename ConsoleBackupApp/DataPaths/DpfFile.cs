@@ -12,8 +12,8 @@ public class DPF
 
     public static DataPath[] GetDataPaths(byte[] buffer)
     {
-        using MemoryStream ms = new MemoryStream(buffer);
-        using BinaryReader reader = new BinaryReader(ms);
+        using MemoryStream ms = new(buffer);
+        using BinaryReader reader = new(ms);
 
         //Header of File
         char[] header = reader.ReadChars(HEADER_ID.Length);
@@ -56,10 +56,10 @@ public class DPF
         }
 
         byte[] buffer = new byte[size];
-        using MemoryStream ms = new MemoryStream(buffer);
-        using BinaryWriter writer = new BinaryWriter(ms);
+        using MemoryStream ms = new(buffer);
+        using BinaryWriter writer = new(ms);
         //Header
-        writer.Write(System.Text.Encoding.UTF8.GetBytes(HEADER_ID));
+        writer.Write(Encoding.UTF8.GetBytes(HEADER_ID));
         writer.Write(VERSION);
         writer.Write((ushort)dataPaths.Length);
         writer.Write(uint.MinValue);//reserved bytes
