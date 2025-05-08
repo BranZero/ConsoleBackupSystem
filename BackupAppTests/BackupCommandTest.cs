@@ -152,7 +152,8 @@ public class BackupCommandTest
 
         //2nd Arrange
         string folder2 = BackupCommandHelper.FindBackupPathName(_archiveFolder);
-        string zipPath2 = Path.Combine(folder, _currentDrive + ".zip");
+        string zipPath2 = Path.Combine(folder2, _currentDrive + ".zip");
+
         PriorBackupPath.TryGetPriorBackup(folder, out PriorBackupPath priorBackupPath);
         List<PriorBackupPath> priorBackups = [priorBackupPath];
 
@@ -168,6 +169,9 @@ public class BackupCommandTest
             Assert.That(Directory.Exists(folder), Is.True);
             Assert.That(File.Exists(zipPath));
 
+            Assert.That(result2, Is.EqualTo(Result.Success));
+            Assert.That(Directory.Exists(folder2), Is.True);
+            Assert.That(File.Exists(zipPath2));
             Assert.That(zipArchive.Entries, Has.Count.EqualTo(0)); //Prior Backups is yet to be implemented
         });
     }
@@ -194,7 +198,8 @@ public class BackupCommandTest
 
         //2nd Arrange
         string folder2 = BackupCommandHelper.FindBackupPathName(_archiveFolder);
-        string zipPath2 = Path.Combine(folder, _currentDrive + ".zip");
+        string zipPath2 = Path.Combine(folder2, _currentDrive + ".zip");
+
         PriorBackupPath.TryGetPriorBackup(folder, out PriorBackupPath priorBackupPath);
         List<PriorBackupPath> priorBackups = [priorBackupPath];
 
@@ -210,8 +215,11 @@ public class BackupCommandTest
             Assert.That(Directory.Exists(folder), Is.True);
             Assert.That(File.Exists(zipPath));
 
+            Assert.That(result2, Is.EqualTo(Result.Success));
+            Assert.That(Directory.Exists(folder2), Is.True);
+            Assert.That(File.Exists(zipPath2));
             Assert.That(zipArchive.Entries, Has.Count.EqualTo(1)); //Prior Backups is yet to be implemented
-            FileTools.TestDoFilesMatch(_testFiles[1], zipPath);
+            FileTools.TestDoFilesMatch(_testFiles[1], zipPath2);
         });
     }
 

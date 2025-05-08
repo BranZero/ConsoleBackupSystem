@@ -1,4 +1,6 @@
 
+using System.IO.Compression;
+using System.Security.Cryptography;
 using ConsoleBackupApp.DataPaths;
 using ConsoleBackupApp.PriorBackup;
 
@@ -131,7 +133,7 @@ public class BackupProcess
             throw;
         }
     }
-
+#region Directory CopyModes
     private void InsertCheckEach(ArchiveQueue archive, HashSet<string> ignorePaths, DirectoryInfo currentDirectory)
     {
         // queue all files in the current directory
@@ -186,10 +188,11 @@ public class BackupProcess
             archive.InsertPath(file.FullName);
         }
     }
+#endregion
 
+#region Prior Backups
     private bool IsInPriorBackups(string fullName)
     {
-        //TODO: Check Prior Backups
         try
         {
             FileInfo fileInfo = new(fullName);
@@ -203,7 +206,10 @@ public class BackupProcess
                 }
                 else
                 {
-                    CheckPriorBackup(fullName, _priorBackups[i].FullPath);
+                    PriorResult priorResult = DoesFileMatchPriorBackup(fileInfo, _priorBackups[i].FullPath);
+                    if (priorResult == PriorResult.Matched) return true;
+                    if (priorResult == PriorResult.Changed) return false;
+                    //else keep looking
                 }
             }
         }
@@ -214,24 +220,64 @@ public class BackupProcess
         }
         return false;
     }
-
-    private static bool CheckPriorBackup(string fullName, string fullPath)
+    /// <summary>
+    /// Determines whether a given file matches a prior backup by comparing its contents
+    /// with the corresponding entry in a zip archive located in the prior backup path.
+    /// </summary>
+    /// <param name="fileInfo">File Path</param>
+    /// <param name="priorbackupPath">Prior Backup Path</param>
+    /// <returns></returns>
+    private static PriorResult DoesFileMatchPriorBackup(FileInfo fileInfo, string priorbackupPath)
     {
-        string zipFile = 
+        string zipFile = Path.Combine(priorbackupPath, fileInfo.FullName[0] + ".zip");
         if (File.Exists(zipFile))
         {
-            
-            return true;
+            using ZipArchive zipArchive = ZipFile.OpenRead(zipFile);
+            ZipArchiveEntry? zipArchiveEntry = zipArchive.GetEntry(fileInfo.FullName[3..]);
+            if (zipArchiveEntry == null)
+            {
+                return PriorResult.NotFound;
+            }
+
+            if (zipArchiveEntry.Length != fileInfo.Length)
+            {
+                return PriorResult.Changed;
+            }
+
+            //Check if the two files are the same
+            using Stream zipReader = zipArchiveEntry.Open();
+            using SHA256 sha256 = SHA256.Create();
+            byte[] hashZip = sha256.ComputeHash(zipReader);
+
+            using Stream fileReader = fileInfo.OpenRead();
+            using SHA256 sha2562 = SHA256.Create();
+            byte[] hashFile = sha2562.ComputeHash(fileReader);
+
+            if(hashFile.SequenceEqual(hashZip))
+            {
+                return PriorResult.Matched;
+            }
+            else
+            {
+                return PriorResult.Changed;
+            }
         }
         else
         {
-            return false;
+            return PriorResult.NotFound;
         }
     }
 
     private static bool IsInIgnorePaths(HashSet<string> ignorePaths, string path)
     {
-
         return ignorePaths.Count != 0 && ignorePaths.Contains(path);
     }
+
+    private enum PriorResult
+    {
+        Matched,
+        Changed,
+        NotFound,
+    }
+#endregion
 }
