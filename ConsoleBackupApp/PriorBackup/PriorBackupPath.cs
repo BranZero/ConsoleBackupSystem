@@ -2,12 +2,12 @@ namespace ConsoleBackupApp.PriorBackup;
 
 public readonly struct PriorBackupPath : IComparable<PriorBackupPath>
 {
-    public readonly DateTime CreationTime;
+    public readonly DateTime LastModified;
     public readonly string FullPath;
 
     public PriorBackupPath(DateTime createdDate, string fullPath)
     {
-        CreationTime = createdDate;
+        LastModified = createdDate;
         if (fullPath[^1] != Path.DirectorySeparatorChar)
         {
             fullPath += Path.DirectorySeparatorChar;
@@ -29,7 +29,14 @@ public readonly struct PriorBackupPath : IComparable<PriorBackupPath>
             if (parts[0] != "Backup") return false;
 
             DateTime dateTime = directoryInfo.CreationTimeUtc;
-            priorBackupPath = new(dateTime, fullPath);
+            foreach (FileInfo fileInfo in directoryInfo.GetFiles())
+            {
+                if (fileInfo.LastWriteTimeUtc > dateTime)
+                {
+                    dateTime = fileInfo.LastWriteTimeUtc;
+                }
+            }
+            priorBackupPath = new(dateTime, directoryInfo.FullName);
             return true;
         }
         catch (Exception)
@@ -39,8 +46,11 @@ public readonly struct PriorBackupPath : IComparable<PriorBackupPath>
         }
     }
 
+    /// <summary>
+    /// Decending Order for comparing DataTime so that most recent is at the top
+    /// </summary>
     public readonly int CompareTo(PriorBackupPath other)
     {
-        return CreationTime.CompareTo(other.CreationTime);
+        return other.LastModified.CompareTo(LastModified);
     }
 }

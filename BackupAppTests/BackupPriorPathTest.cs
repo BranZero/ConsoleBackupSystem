@@ -24,6 +24,10 @@ public class BackupPriorPathTest
         Directory.CreateDirectory(_testBackups[2]);
         _testBackups.Add(_archiveFolder + "NotABackupDirectory" + Path.DirectorySeparatorChar);
         Directory.CreateDirectory(_testBackups[3]);
+        _testBackups.Add(_archiveFolder + "Backup_12_12_12_2" + Path.DirectorySeparatorChar);
+        Directory.CreateDirectory(_testBackups[4]);
+        _testBackups.Add(_archiveFolder + "Backup_12_12_12_3" + Path.DirectorySeparatorChar);
+        Directory.CreateDirectory(_testBackups[5]);
     }
 
     [OneTimeTearDown]
@@ -45,7 +49,31 @@ public class BackupPriorPathTest
         {
             Assert.That(result, Is.True);
             Assert.That(_testBackups[0], Is.EqualTo(priorBackupPath.FullPath));
-            Assert.That(directoryInfo.CreationTimeUtc, Is.EqualTo(priorBackupPath.CreationTime));
+            Assert.That(directoryInfo.CreationTimeUtc, Is.EqualTo(priorBackupPath.LastModified));
+        }
+    }
+
+    [Test]
+    public void Sort_PriorBackup()
+    {
+        // Arrange
+        List<PriorBackupPath> list = [];
+        PriorBackupPath.TryGetPriorBackup(_testBackups[3], out PriorBackupPath priorBackupPath);
+        list.Add(priorBackupPath);
+        PriorBackupPath.TryGetPriorBackup(_testBackups[5], out PriorBackupPath priorBackupPath2);
+        list.Add(priorBackupPath2);
+        PriorBackupPath.TryGetPriorBackup(_testBackups[4], out PriorBackupPath priorBackupPath3);
+        list.Add(priorBackupPath3);
+
+        // Act
+        list.Sort();
+
+        // Assert
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(priorBackupPath2, Is.EqualTo(list[0]));
+            Assert.That(priorBackupPath3, Is.EqualTo(list[1]));
+            Assert.That(priorBackupPath, Is.EqualTo(list[2]));
         }
     }
 

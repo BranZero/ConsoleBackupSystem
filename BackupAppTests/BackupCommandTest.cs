@@ -3,6 +3,7 @@ using BackupAppTests.TestingTools;
 using ConsoleBackupApp;
 using ConsoleBackupApp.Backup;
 using ConsoleBackupApp.DataPaths;
+using ConsoleBackupApp.PriorBackup;
 
 namespace BackupAppTests;
 
@@ -152,7 +153,8 @@ public class BackupCommandTest
         //2nd Arrange
         string folder2 = BackupCommandHelper.FindBackupPathName(_archiveFolder);
         string zipPath2 = Path.Combine(folder, _currentDrive + ".zip");
-        List<string> priorBackups = [folder];
+        PriorBackupPath.TryGetPriorBackup(folder, out PriorBackupPath priorBackupPath);
+        List<PriorBackupPath> priorBackups = [priorBackupPath];
 
         //2nd Act
         BackupController backupController2 = new(folder2, dataPaths, priorBackups);
@@ -193,7 +195,8 @@ public class BackupCommandTest
         //2nd Arrange
         string folder2 = BackupCommandHelper.FindBackupPathName(_archiveFolder);
         string zipPath2 = Path.Combine(folder, _currentDrive + ".zip");
-        List<string> priorBackups = [folder];
+        PriorBackupPath.TryGetPriorBackup(folder, out PriorBackupPath priorBackupPath);
+        List<PriorBackupPath> priorBackups = [priorBackupPath];
 
         //2nd Act
         BackupController backupController2 = new(folder2, dataPaths, priorBackups);

@@ -1,6 +1,6 @@
 
-using System.Collections.Concurrent;
 using ConsoleBackupApp.DataPaths;
+using ConsoleBackupApp.PriorBackup;
 
 namespace ConsoleBackupApp.Backup;
 /// <summary>
@@ -10,9 +10,9 @@ public class BackupProcess
 {
     private readonly BackupShared _sharedData;
     private CancellationToken _cancellationToken;
-    private string[] _priorBackups;
+    private readonly PriorBackupPath[] _priorBackups;
 
-    public BackupProcess(BackupShared backupShared, string[] priorBackups)
+    public BackupProcess(BackupShared backupShared, PriorBackupPath[] priorBackups)
     {
         _sharedData = backupShared;
         _priorBackups = priorBackups;
@@ -190,11 +190,48 @@ public class BackupProcess
     private bool IsInPriorBackups(string fullName)
     {
         //TODO: Check Prior Backups
+        try
+        {
+            FileInfo fileInfo = new(fullName);
+            for (int i = 0; i < _priorBackups.Length; i++)
+            {
+                //Go from when the folder was created which is before any files are writen to it.
+                if (fileInfo.LastWriteTimeUtc >= _priorBackups[i].LastModified)
+                {
+                    //Modifed after last backup in list was created
+                    return false;
+                }
+                else
+                {
+                    CheckPriorBackup(fullName, _priorBackups[i].FullPath);
+                }
+            }
+        }
+        catch (Exception)
+        {
+            //TODO: Log Error
+            throw;
+        }
         return false;
+    }
+
+    private static bool CheckPriorBackup(string fullName, string fullPath)
+    {
+        string zipFile = 
+        if (File.Exists(zipFile))
+        {
+            
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     private static bool IsInIgnorePaths(HashSet<string> ignorePaths, string path)
     {
+
         return ignorePaths.Count != 0 && ignorePaths.Contains(path);
     }
 }
