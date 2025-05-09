@@ -58,7 +58,7 @@ public class BackupCommandTest
         ];
 
         // Act
-        BackupController backupController = new(folder, dataPaths, []);
+        BackupController backupController = BackupController.Init(folder, dataPaths, []);
         Result result = backupController.Start();
         using ZipArchive zipArchive = ZipFile.OpenRead(zipPath);
 
@@ -84,7 +84,7 @@ public class BackupCommandTest
         List<DataPath> dataPaths = [];
 
         // Act
-        BackupController backupController = new(folder, dataPaths, []);
+        BackupController backupController = BackupController.Init(folder, dataPaths, []);
         Result result = backupController.Start();
 
         // Assert
@@ -113,7 +113,7 @@ public class BackupCommandTest
         ];
 
         // Act
-        BackupController backupController = new(folder, dataPaths, []);
+        BackupController backupController = BackupController.Init(folder, dataPaths, []);
         Result result = backupController.Start();
         using ZipArchive zipArchive = ZipFile.OpenRead(zipPath);
 
@@ -147,7 +147,7 @@ public class BackupCommandTest
         ];
 
         //1st Act
-        BackupController backupController = new(folder, dataPaths, []);
+        BackupController backupController = BackupController.Init(folder, dataPaths, []);
         Result result = backupController.Start();
 
         //2nd Arrange
@@ -158,7 +158,7 @@ public class BackupCommandTest
         List<PriorBackupPath> priorBackups = [priorBackupPath];
 
         //2nd Act
-        BackupController backupController2 = new(folder2, dataPaths, priorBackups);
+        BackupController backupController2 = BackupController.Init(folder2, dataPaths, priorBackups);
         Result result2 = backupController2.Start();
         using ZipArchive zipArchive = ZipFile.OpenRead(zipPath2);
 
@@ -193,7 +193,7 @@ public class BackupCommandTest
         ];
 
         //1st Act
-        BackupController backupController = new(folder, dataPaths, []);
+        BackupController backupController = BackupController.Init(folder, dataPaths, []);
         Result result = backupController.Start();
 
         //2nd Arrange
@@ -204,7 +204,7 @@ public class BackupCommandTest
         List<PriorBackupPath> priorBackups = [priorBackupPath];
 
         //2nd Act
-        BackupController backupController2 = new(folder2, dataPaths, priorBackups);
+        BackupController backupController2 = BackupController.Init(folder2, dataPaths, priorBackups);
         Result result2 = backupController2.Start();
         using ZipArchive zipArchive = ZipFile.OpenRead(zipPath2);
 
@@ -240,7 +240,7 @@ public class BackupCommandTest
         ];
 
         // Act
-        BackupController backupController = new(folder, dataPaths, []);
+        BackupController backupController = BackupController.Init(folder, dataPaths, []);
         Result result = backupController.Start();
         using ZipArchive zipArchive = ZipFile.OpenRead(zipPath);
 

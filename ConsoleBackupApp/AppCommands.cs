@@ -131,7 +131,7 @@ public class AppCommands
 
         //Check Backup Directory
         string backupDir = args[index];
-        if (Directory.Exists(backupDir)) //TODO: build directory to this folder if doesn't exist already
+        if (Directory.Exists(backupDir))
         {
             if (backupDir[^1] != Path.DirectorySeparatorChar)
             {

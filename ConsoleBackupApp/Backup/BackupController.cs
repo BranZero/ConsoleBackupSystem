@@ -11,17 +11,22 @@ public class BackupController
     private List<BackupProcess> _backupProcesses;
     private BackupShared _backupShared;
 
-
-    public BackupController(string folderPath, List<DataPath> dataPaths, List<PriorBackupPath> priorBackups)
+    private BackupController(string folderPath, BackupShared backupShared, List<BackupArchives> backupArchives, List<BackupProcess> backupProcesses, PriorBackupPath[] priorBackupPaths)
     {
         _folderPath = folderPath;
+        _backupShared = backupShared;
+        _backupArchives = backupArchives;
+        _backupProcesses = backupProcesses;
+        _priorBackups = priorBackupPaths;
+    }
+
+    public static BackupController Init(string folderPath, List<DataPath> dataPaths, List<PriorBackupPath> priorBackups)
+    {
         priorBackups.Sort();
-        _priorBackups = priorBackups.ToArray();
-        _backupProcesses = [];
 
         //Load datapaths into queue and get all drives
         Queue<DataPath> dataPathsQueue = new Queue<DataPath>();
-        HashSet<char> drives = new();
+        HashSet<char> drives = [];
         foreach(var dataPath in dataPaths)
         {
             dataPathsQueue.Enqueue(dataPath);
@@ -30,22 +35,25 @@ public class BackupController
 
         //Create Backup Consumers (Archives)
         List<ArchiveQueue> archiveQueues = [];
-        _backupArchives = [];
+        List<BackupArchives> backupArchives = [];
         foreach (char drive in drives)
         {
             ArchiveQueue archiveQueue = new(drive);
             archiveQueues.Add(archiveQueue);
-            _backupArchives.Add(new BackupArchives(archiveQueue));
+            backupArchives.Add(new BackupArchives(archiveQueue));
         }
 
-        _backupShared = new(dataPathsQueue, archiveQueues);
+        BackupShared backupShared = new(dataPathsQueue, archiveQueues);
+        PriorBackupPath[] priorBackupsList = [.. priorBackups];
 
         //Create Backup Produces (Processes)
-        for (int i = 0; i < _backupArchives.Count*2; i++)//TODO: Change double backup archives
+        List<BackupProcess> backupProcesses = [];
+        for (int i = 0; i < backupArchives.Count*2; i++)//TODO: Change double backup archives
         {
-            BackupProcess backupProcess = new(_backupShared, _priorBackups);
-            _backupProcesses.Add(backupProcess);
+            BackupProcess backupProcess = new(backupShared, priorBackupsList);
+            backupProcesses.Add(backupProcess);
         }
+        return new(folderPath, backupShared, backupArchives, backupProcesses, priorBackupsList);
     }
     public Result Start()
     {
@@ -101,7 +109,7 @@ public class BackupController
             DirectoryInfo directoryInfo = Directory.CreateDirectory(path);
             return directoryInfo.Exists;
         }
-        catch (System.Exception)
+        catch (Exception)
         {
             return false;
         }
