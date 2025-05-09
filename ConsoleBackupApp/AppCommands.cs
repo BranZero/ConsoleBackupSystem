@@ -1,5 +1,6 @@
 
 using ConsoleBackupApp.DataPaths;
+using ConsoleBackupApp.PriorBackup;
 
 namespace ConsoleBackupApp;
 public class AppCommands
@@ -143,7 +144,7 @@ public class AppCommands
         }
 
         //Check Prior Backups if Checked
-        List<string> priorBackups = new List<string>();
+        List<PriorBackupPath> priorBackups = [];
         if (checkForBackupsInFolder)
         {
             //Check in same folder as destination path
@@ -157,7 +158,10 @@ public class AppCommands
                 return Result.Too_Few_Arguments;
             }
             ReadOnlySpan<string> argsLeft = new ReadOnlySpan<string>(args, index, args.Length - index);
-            BackupCommandHelper.FindPriorBackupPathsByArgs(argsLeft, priorBackups);
+            if(!BackupCommandHelper.FindPriorBackupPathsByArgs(argsLeft, priorBackups))
+            {
+                return Result.Invalid_Path;
+            }
         }
         return BackupCommandHelper.BackupData(backupDir, priorBackups);//if priorBackups is empty don't check prior backups
 

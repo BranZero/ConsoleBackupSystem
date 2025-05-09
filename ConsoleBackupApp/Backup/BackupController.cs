@@ -1,22 +1,23 @@
 
-using System.Collections.Concurrent;
 using ConsoleBackupApp.DataPaths;
+using ConsoleBackupApp.PriorBackup;
 
 namespace ConsoleBackupApp.Backup;
 public class BackupController
 {
-    private readonly string[] _priorBackups;
+    private readonly PriorBackupPath[] _priorBackups;
     private readonly string _folderPath;
     private List<BackupArchives> _backupArchives;
     private List<BackupProcess> _backupProcesses;
     private BackupShared _backupShared;
 
 
-    public BackupController(string folderPath, List<DataPath> dataPaths, List<string> priorBackups)
+    public BackupController(string folderPath, List<DataPath> dataPaths, List<PriorBackupPath> priorBackups)
     {
         _folderPath = folderPath;
+        priorBackups.Sort();
         _priorBackups = priorBackups.ToArray();
-        _backupProcesses = new();
+        _backupProcesses = [];
 
         //Load datapaths into queue and get all drives
         Queue<DataPath> dataPathsQueue = new Queue<DataPath>();
@@ -28,8 +29,8 @@ public class BackupController
         }
 
         //Create Backup Consumers (Archives)
-        List<ArchiveQueue> archiveQueues = new();
-        _backupArchives = new();
+        List<ArchiveQueue> archiveQueues = [];
+        _backupArchives = [];
         foreach (char drive in drives)
         {
             ArchiveQueue archiveQueue = new(drive);

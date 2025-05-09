@@ -5,6 +5,7 @@ using ConsoleBackupApp;
 using ConsoleBackupApp.Backup;
 using ConsoleBackupApp.DataPaths;
 using ConsoleBackupApp.Logging;
+using ConsoleBackupApp.PriorBackup;
 
 namespace ConsoleBackupApp;
 public class BackupCommandHelper
@@ -15,7 +16,7 @@ public class BackupCommandHelper
     /// <param name="priorBackups"></param>
     /// <param name="folderPath"></param>
     /// <returns>true if an error occured during this process</returns>
-    public static void FindPriorBackupPathsInDirectory(string backupDir, List<string> priorBackupPaths)
+    public static void FindPriorBackupPathsInDirectory(string backupDir, List<PriorBackupPath> priorBackupPaths)
     {
         if (!Directory.Exists(backupDir))
         {
@@ -27,13 +28,9 @@ public class BackupCommandHelper
             DirectoryInfo[] directoryInfos = directoryInfo.GetDirectories();
             foreach (DirectoryInfo dir in directoryInfos)
             {
-                if (!IsPriorBackup(dir)) continue;
-                string path = dir.FullName;
-                if (path[^1] != Path.DirectorySeparatorChar)
-                {
-                    path += Path.DirectorySeparatorChar;
-                }
-                priorBackupPaths.Add(path);
+                if (!PriorBackupPath.TryGetPriorBackup(dir.FullName, out PriorBackupPath priorBackupPath)) continue;
+
+                priorBackupPaths.Add(priorBackupPath);
             }
         }
         catch (Exception ex)
@@ -43,25 +40,6 @@ public class BackupCommandHelper
         }
     }
 
-    public static bool IsPriorBackup(DirectoryInfo dir)
-    {
-        if (!dir.Name.StartsWith("Backup_")) return false;
-        if (!char.IsNumber(dir.Name[^1])) return false;
-        try
-        {
-            DirectoryInfo[] directoryInfos = dir.GetDirectories();
-            foreach (var subDir in directoryInfos)
-            {
-                if (subDir.Name.Length != 1) return false;
-            }
-        }
-        catch (System.Exception)
-        {
-            //Log Error
-            throw;
-        }
-        return true;
-    }
 
     public static string FindBackupPathName(string backupDir)
     {
@@ -79,27 +57,31 @@ public class BackupCommandHelper
         return backupDir + temp + Path.DirectorySeparatorChar;
     }
 
-    internal static void FindPriorBackupPathsByArgs(ReadOnlySpan<string> argsLeft, List<string> priorBackupPaths)
+    internal static bool FindPriorBackupPathsByArgs(ReadOnlySpan<string> argsLeft, List<PriorBackupPath> priorBackupPaths)
     {
-        for(int i = 0; i < argsLeft.Length; i++){
+        for (int i = 0; i < argsLeft.Length; i++)
+        {
             string path = argsLeft[i];
-            if(path[^1] != Path.DirectorySeparatorChar){
-                path += Path.DirectorySeparatorChar;
+            if (PriorBackupPath.TryGetPriorBackup(path, out PriorBackupPath priorBackupPath))
+            {
+                //check if adding prior paths if path was already added
+                if (priorBackupPaths.Contains(priorBackupPath))
+                {
+                    continue;
+                }
+                priorBackupPaths.Add(priorBackupPath);
             }
-            //check if adding prior paths if path was already added
-            if(priorBackupPaths.Contains(path)){
-                continue;
+            else
+            {
+                //TODO: log error
+                //exit Early invalid path
+                return false;
             }
-            if(!Directory.Exists(path)){
-                
-                //exit early with Result Invalid Secondary Path
-                return;
-            }
-            priorBackupPaths.Add(path);
         }
+        return true;
     }
 
-    internal static Result BackupData(string backupDir, List<string> priorBackups)
+    internal static Result BackupData(string backupDir, List<PriorBackupPath> priorBackups)
     {
         List<DataPath> dataPaths = ValidDataPaths();
 
@@ -123,7 +105,10 @@ public class BackupCommandHelper
         }
         return Result.Success;
     }
-
+    /// <summary>
+    /// All DataPath are validated as either a file or directory if that can be located
+    /// </summary>
+    /// <returns></returns>
     private static List<DataPath> ValidDataPaths()
     {
         Queue<DataPath> unCheckedDataPaths = new(DataFileManager.GetDataPaths());

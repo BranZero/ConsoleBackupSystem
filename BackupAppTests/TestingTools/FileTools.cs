@@ -87,7 +87,7 @@ public static class FileTools
         for (int i = 0; i < 15; i++)
         {
             context += Encoding.UTF8.GetString(SHA1.HashData(Encoding.UTF8.GetBytes(context)));
-            testFiles.Add(CreateTestFile(sub2, $"HashFile{i}.hex", context));
+            testFiles.Add(CreateTestFile(sub2, $"HashFile{i}.hex", context));//2-16
         }
 
         //Sub3 directory sub directories
@@ -96,7 +96,7 @@ public static class FileTools
 
         //Sub3 directory files
         string context1 = "Hello,World\nHello,World2\n";
-        testFiles.Add(CreateTestFile(sub3, $"hw.txt", context1));
+        testFiles.Add(CreateTestFile(sub3, $"hw.txt", context1));//17
 
         //Sub5 directory sub directories
         string sub6 = CreateDirectory(sub4,"sub6");
@@ -107,7 +107,7 @@ public static class FileTools
         for (int i = 0; i < 4; i++)
         {
             context += Encoding.UTF8.GetString(SHA256.HashData(Encoding.UTF8.GetBytes(context2)));
-            testFiles.Add(CreateTestFile(sub6, $"HashFile{i}.hex", context2));
+            testFiles.Add(CreateTestFile(sub6, $"HashFile256{i}.hex", context2));//18-21
         }
 
         return testFiles;
