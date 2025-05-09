@@ -103,7 +103,7 @@ public class BackupProcess
             {
                 DirectoryInfo currentDirectory = directories.Pop();
                 //Ignore Paths
-                if (IsInIgnorePaths(ignorePaths, currentDirectory.FullName))
+                if (IsInIgnorePaths(ignorePaths, currentDirectory.Name))
                 {
                     continue;
                 }
@@ -140,7 +140,7 @@ public class BackupProcess
         foreach (FileInfo file in currentDirectory.GetFiles())
         {
             //Ignore Paths
-            if (IsInIgnorePaths(ignorePaths, file.FullName))
+            if (IsInIgnorePaths(ignorePaths, file.Name))
             {
                 continue;
             }
@@ -159,7 +159,7 @@ public class BackupProcess
         foreach (FileInfo file in currentDirectory.GetFiles())
         {
             //Ignore Paths
-            if (IsInIgnorePaths(ignorePaths, file.FullName))
+            if (IsInIgnorePaths(ignorePaths, file.Name))
             {
                 continue;
             }
@@ -180,7 +180,7 @@ public class BackupProcess
         foreach (FileInfo file in currentDirectory.GetFiles())
         {
             //Ignore Paths
-            if (IsInIgnorePaths(ignorePaths, file.FullName))
+            if (IsInIgnorePaths(ignorePaths, file.Name))
             {
                 continue;
             }
