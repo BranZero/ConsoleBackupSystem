@@ -91,10 +91,19 @@ public class BackupCommandHelper
             return Result.Empty;
         }
 
-        BackupController controller = new BackupController(backupDir, dataPaths, priorBackups);
+        //Check if the backup directory has a dataPath as a sub directory
+        foreach (DataPath dataPath in dataPaths)
+        {
+            if (backupDir.StartsWith(dataPath.SourcePath))
+            {
+                //TODO: Log Error
+                return Result.Error;
+            }
+        }
+
         try
         {
-            Directory.CreateDirectory(backupDir);
+            BackupController controller = BackupController.Init(backupDir, dataPaths, priorBackups);
             controller.Start();
         }
         catch (System.Exception)
