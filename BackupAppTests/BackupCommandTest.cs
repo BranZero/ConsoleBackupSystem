@@ -231,8 +231,8 @@ public class BackupCommandTest
         string zipPath = Path.Combine(folder, _currentDrive + ".zip");
 
         List<string> ignorePaths = [
-            _testDirectories[1],
-            _testFiles[0],
+            Path.GetFileName(_testDirectories[1]),
+            Path.GetFileName(_testFiles[0]),
         ];
 
         List<DataPath> dataPaths = [
