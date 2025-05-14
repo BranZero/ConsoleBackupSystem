@@ -2,6 +2,7 @@
 using System.IO.Compression;
 using System.Security.Cryptography;
 using ConsoleBackupApp.DataPaths;
+using ConsoleBackupApp.Logging;
 using ConsoleBackupApp.PriorBackup;
 
 namespace ConsoleBackupApp.Backup;
@@ -37,7 +38,7 @@ public class BackupProcess
             }
             if (!_sharedData.TryGetArchive(dataPath.Drive, out ArchiveQueue? archive) || archive is null)
             {
-                //TODO: Log Error
+                Logger.Log(LogLevel.Error, $"Unable to retrieve archive for drive: {dataPath.Drive}");
                 return;
             }
             //Process DataPath
@@ -51,7 +52,7 @@ public class BackupProcess
             }
             else
             {
-                //TODO: Log Error
+                Logger.Log(LogLevel.Error, $"Unsupported PathType was passed in {dataPath.Type} for {dataPath.SourcePath}");
                 continue;
             }
         }
@@ -74,7 +75,7 @@ public class BackupProcess
         }
         else
         {
-            //TODO: Log Error
+            Logger.Log(LogLevel.Warning, $"File no longer exists: {filePath}");
         }
     }
 
@@ -95,7 +96,7 @@ public class BackupProcess
             }
             else
             {
-                //TODO: Log Error Source Directory Not Found
+                Logger.Log(LogLevel.Error, "Log Error Source Directory Not Found");
                 return;
             }
 
@@ -213,9 +214,9 @@ public class BackupProcess
                 }
             }
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            //TODO: Log Error
+            Logger.Log(LogLevel.Error, e.Message + "\n" + e.StackTrace);
             throw;
         }
         return false;
