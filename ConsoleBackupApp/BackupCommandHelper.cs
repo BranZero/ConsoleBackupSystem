@@ -73,7 +73,7 @@ public class BackupCommandHelper
             }
             else
             {
-                //TODO: log error
+                Logger.Log(LogLevel.Warning, $"Can't find {priorBackupPaths[i]}");
                 //exit Early invalid path
                 return false;
             }
@@ -96,7 +96,7 @@ public class BackupCommandHelper
         {
             if (backupDir.StartsWith(dataPath.SourcePath))
             {
-                //TODO: Log Error
+                Logger.Log(LogLevel.Error, $"The selected backup path is a sub path of a directory to be backedup {dataPath.SourcePath} in {backupDir}");
                 return Result.Error;
             }
         }
