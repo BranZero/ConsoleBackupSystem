@@ -114,7 +114,7 @@ public class Program
                 return "Invalid Command";
         }
     }
-    public static async Task Exit(string[] args)
+    public static async void Exit(string[] args)
     {
         if (args.Length != 1)
         {
