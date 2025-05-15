@@ -1,7 +1,5 @@
-
-
-using System.Collections.Concurrent;
 using System.IO.Compression;
+using ConsoleBackupApp.Logging;
 namespace ConsoleBackupApp.Backup;
 
 /// <summary>
@@ -37,9 +35,9 @@ public class BackupArchives
             //Create the zip file
             _zipArchive = ZipFile.Open(zipFile, ZipArchiveMode.Create);
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            //TODO: log error and exit
+            Logger.Instance.Log(LogLevel.Error, e.Message + "\n" + e.StackTrace);
             return;
         }
         finally
@@ -84,14 +82,14 @@ public class BackupArchives
         {
             if (_zipArchive is null)
             {
-                //TODO: Log Error from that class not running start yet
-                throw new NullReferenceException();
+                Logger.Instance.Log(LogLevel.Error, "Attempted to start archive process before running start.");
+                return;
             }
             _zipArchive.CreateEntryFromFile(filePath, entryName, COMPRESSION_LEVEL);
         }
-        catch
+        catch (Exception e)
         {
-            //TODO: Log Error
+            Logger.Instance.Log(LogLevel.Error, e.Message + "\n" + e.StackTrace);
         }
         finally
         {
@@ -106,9 +104,9 @@ public class BackupArchives
             _writeMutex.WaitOne();
             _zipArchive?.Dispose();
         }
-        catch
+        catch (Exception e)
         {
-            //TODO: Log Error
+            Logger.Instance.Log(LogLevel.Error, e.Message + "\n" + e.StackTrace);
         }
         finally
         {

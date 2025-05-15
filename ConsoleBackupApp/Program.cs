@@ -5,9 +5,10 @@ namespace ConsoleBackupApp;
 public class Program
 {
     private static readonly CancellationTokenSource _loggerToken = new();
+    private static Task? _loggerTask;
     public static void Main(string[] args)
     {
-        Task.Run(() => Logger.ProcessLogQueue(_loggerToken.Token));
+        _loggerTask = Task.Run(() => Logger.Instance.StartLoggingProcess(_loggerToken.Token));
         if (args.Length > 0)
         {
             Command(args);
@@ -112,13 +113,17 @@ public class Program
                 return "Invalid Command";
         }
     }
-    public static void Exit(string[] args)
+    public static async void Exit(string[] args)
     {
         if (args.Length != 1)
         {
             return;
         }
-        _loggerToken.CancelAsync();
+        _loggerToken.Cancel();
+        if (_loggerTask != null)
+        {
+            await _loggerTask;
+        }
         Environment.Exit(0);
     }
 }

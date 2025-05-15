@@ -1,3 +1,5 @@
+using ConsoleBackupApp.Logging;
+
 namespace ConsoleBackupApp.PriorBackup;
 
 public readonly struct PriorBackupPath : IComparable<PriorBackupPath>
@@ -39,9 +41,9 @@ public readonly struct PriorBackupPath : IComparable<PriorBackupPath>
             priorBackupPath = new(dateTime, directoryInfo.FullName);
             return true;
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            //TODO: Log Error
+            Logger.Instance.Log(LogLevel.Error, e.Message + "\n" + e.StackTrace);
             throw;
         }
     }

@@ -1,5 +1,6 @@
 
 using ConsoleBackupApp.DataPaths;
+using ConsoleBackupApp.Logging;
 using ConsoleBackupApp.PriorBackup;
 
 namespace ConsoleBackupApp.Backup;
@@ -109,8 +110,9 @@ public class BackupController
             DirectoryInfo directoryInfo = Directory.CreateDirectory(path);
             return directoryInfo.Exists;
         }
-        catch (Exception)
+        catch (Exception e)
         {
+            Logger.Instance.Log(LogLevel.Error, e.Message + "\n" + e.StackTrace);
             return false;
         }
     }

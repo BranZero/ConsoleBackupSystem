@@ -1,3 +1,5 @@
+using ConsoleBackupApp.Logging;
+
 namespace ConsoleBackupApp.DataPaths;
 
 public class DataFileManager
@@ -72,9 +74,9 @@ public class DataFileManager
             File.Move(DATA_PATH_FILE_TEMP, DATA_PATH_FILE);
             File.Delete(DATA_PATH_FILE_TEMP);
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            throw;//log errors
+            Logger.Instance.Log(LogLevel.Error, e.Message + "\n" + e.StackTrace);
         }
     }
     internal static byte[] ReadDataFile()
@@ -90,9 +92,10 @@ public class DataFileManager
                 return [];
             }
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            throw;//log errors
+            Logger.Instance.Log(LogLevel.Error, e.Message + "\n" + e.StackTrace);
+            return [];
         }
     }
 }
