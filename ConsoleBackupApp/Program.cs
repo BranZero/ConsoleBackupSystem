@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using System.Threading.Tasks;
 using ConsoleBackupApp.Logging;
 
 namespace ConsoleBackupApp;
@@ -9,7 +8,7 @@ public class Program
     private static Task? _loggerTask;
     public static void Main(string[] args)
     {
-        _loggerTask = Task.Run(() => Logger.StartLoggingProcess(_loggerToken.Token));
+        _loggerTask = Task.Run(() => Logger.Instance.StartLoggingProcess(_loggerToken.Token));
         if (args.Length > 0)
         {
             Command(args);

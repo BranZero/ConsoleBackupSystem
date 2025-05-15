@@ -35,7 +35,7 @@ public class BackupCommandHelper
         }
         catch (Exception ex)
         {
-            Logger.Log(LogLevel.Error, ex.Message);
+            Logger.Instance.Log(LogLevel.Error, ex.Message);
             throw;
         }
     }
@@ -73,7 +73,7 @@ public class BackupCommandHelper
             }
             else
             {
-                Logger.Log(LogLevel.Warning, $"Can't find {priorBackupPaths[i]}");
+                Logger.Instance.Log(LogLevel.Warning, $"Can't find {priorBackupPaths[i]}");
                 //exit Early invalid path
                 return false;
             }
@@ -96,7 +96,7 @@ public class BackupCommandHelper
         {
             if (backupDir.StartsWith(dataPath.SourcePath))
             {
-                Logger.Log(LogLevel.Error, $"The selected backup path is a sub path of a directory to be backedup {dataPath.SourcePath} in {backupDir}");
+                Logger.Instance.Log(LogLevel.Error, $"The selected backup path is a sub path of a directory to be backedup {dataPath.SourcePath} in {backupDir}");
                 return Result.Error;
             }
         }

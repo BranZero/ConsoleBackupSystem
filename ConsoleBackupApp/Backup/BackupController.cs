@@ -112,7 +112,7 @@ public class BackupController
         }
         catch (Exception e)
         {
-            Logger.Log(LogLevel.Error, e.Message + "\n" + e.StackTrace);
+            Logger.Instance.Log(LogLevel.Error, e.Message + "\n" + e.StackTrace);
             return false;
         }
     }

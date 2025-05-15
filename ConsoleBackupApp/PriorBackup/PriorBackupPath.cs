@@ -43,7 +43,7 @@ public readonly struct PriorBackupPath : IComparable<PriorBackupPath>
         }
         catch (Exception e)
         {
-            Logger.Log(LogLevel.Error, e.Message + "\n" + e.StackTrace);
+            Logger.Instance.Log(LogLevel.Error, e.Message + "\n" + e.StackTrace);
             throw;
         }
     }

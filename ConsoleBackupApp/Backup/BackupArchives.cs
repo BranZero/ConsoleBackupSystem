@@ -37,7 +37,7 @@ public class BackupArchives
         }
         catch (Exception e)
         {
-            Logger.Log(LogLevel.Error, e.Message + "\n" + e.StackTrace);
+            Logger.Instance.Log(LogLevel.Error, e.Message + "\n" + e.StackTrace);
             return;
         }
         finally
@@ -82,14 +82,14 @@ public class BackupArchives
         {
             if (_zipArchive is null)
             {
-                Logger.Log(LogLevel.Error, "Attempted to start archive process before running start.");
+                Logger.Instance.Log(LogLevel.Error, "Attempted to start archive process before running start.");
                 return;
             }
             _zipArchive.CreateEntryFromFile(filePath, entryName, COMPRESSION_LEVEL);
         }
         catch (Exception e)
         {
-            Logger.Log(LogLevel.Error, e.Message + "\n" + e.StackTrace);
+            Logger.Instance.Log(LogLevel.Error, e.Message + "\n" + e.StackTrace);
         }
         finally
         {
@@ -106,7 +106,7 @@ public class BackupArchives
         }
         catch (Exception e)
         {
-            Logger.Log(LogLevel.Error, e.Message + "\n" + e.StackTrace);
+            Logger.Instance.Log(LogLevel.Error, e.Message + "\n" + e.StackTrace);
         }
         finally
         {
