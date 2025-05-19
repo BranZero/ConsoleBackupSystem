@@ -91,7 +91,9 @@ public class BackupCommandHelper
             return Result.Empty;
         }
 
-        //Check if the backup directory has a dataPath as a sub directory
+        string baseBackupFolder = FindBackupPathName(backupDir);
+
+        //Check if the backup is a sub directory of one of the dataPaths
         foreach (DataPath dataPath in dataPaths)
         {
             if (backupDir.StartsWith(dataPath.SourcePath))
@@ -103,14 +105,14 @@ public class BackupCommandHelper
 
         try
         {
-            BackupController controller = BackupController.Init(backupDir, dataPaths, priorBackups);
+            BackupController controller = BackupController.Init(baseBackupFolder, dataPaths, priorBackups);
             controller.Start();
         }
         catch (Exception)
         {
 
-            throw;
-            //return error and clean up
+            Logger.Instance.Log(LogLevel.Fatal, $"Something Happened while backing up the data to {baseBackupFolder}");
+            return Result.Error;
         }
         return Result.Success;
     }
