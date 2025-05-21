@@ -6,17 +6,12 @@ using ConsoleBackupApp.DataPaths;
 namespace ConsoleBackupApp.Backup;
 public class BackupShared
 {
-    private BackupStat _backupStats;
-    private Mutex _statsMutex;
     private Queue<DataPath> _dataPaths;
     private Mutex _dataPathMutex;
     private List<ArchiveQueue> _archiveQueues;
 
     public BackupShared(Queue<DataPath> dataPaths, List<ArchiveQueue> archiveQueues)
     {
-        _backupStats = new();
-
-        _statsMutex = new();
         _dataPathMutex = new();
 
         _dataPaths = dataPaths;

@@ -12,11 +12,13 @@ public class BackupArchives
     private CancellationToken _cancellationToken;
     private Mutex _writeMutex;
     public readonly ArchiveQueue _archive;
+    private BackupStat _archiveBackupStat;
 
     public BackupArchives(ArchiveQueue archiveQueue)
     {
         _writeMutex = new();
         _archive = archiveQueue;
+        _archiveBackupStat = new();
     }
 
     /// <summary>
@@ -51,7 +53,7 @@ public class BackupArchives
     {
         while (!_cancellationToken.IsCancellationRequested)
         {
-            if(!_archive.PathsToCopy.TryTake(out string? fullPath) || fullPath is null)
+            if (!_archive.PathsToCopy.TryTake(out string? fullPath) || fullPath is null)
             {
                 continue;
             }
@@ -66,6 +68,8 @@ public class BackupArchives
             string zipPath = fullPath[3..];
             AddFile(fullPath, zipPath);
         }
+
+        //Get size of archive after complete
 
         Close();
     }
@@ -86,6 +90,7 @@ public class BackupArchives
                 return;
             }
             _zipArchive.CreateEntryFromFile(filePath, entryName, COMPRESSION_LEVEL);
+            _archiveBackupStat.FileCalls++;
         }
         catch (Exception e)
         {
@@ -114,4 +119,11 @@ public class BackupArchives
         }
         _writeMutex.Close();
     }
+
+    //Get archieve's stats
+    public BackupStat GetArchivesStats()
+    {
+        return _archiveBackupStat;
+    }
+    
 }
