@@ -13,12 +13,14 @@ public class BackupArchives
     private Mutex _writeMutex;
     public readonly ArchiveQueue _archive;
     private BackupStat _archiveBackupStat;
+    private readonly string _zipFilePath;
 
-    public BackupArchives(ArchiveQueue archiveQueue)
+    public BackupArchives(ArchiveQueue archiveQueue, string folderPath)
     {
         _writeMutex = new();
         _archive = archiveQueue;
         _archiveBackupStat = new();
+        _zipFilePath = folderPath + _archive.Drive + ".zip";
     }
 
     /// <summary>
@@ -26,16 +28,15 @@ public class BackupArchives
     /// </summary>
     /// <param name="folderPath"></param>
     /// <param name="cancellationToken">if closed early with get everything from the archiveQueue</param>
-    public void Start(string folderPath, CancellationToken cancellationToken)
+    public void Start(CancellationToken cancellationToken)
     {
         _writeMutex.WaitOne();
         _cancellationToken = cancellationToken;
 
-        string zipFile = folderPath + _archive.Drive + ".zip";
         try
         {
             //Create the zip file
-            _zipArchive = ZipFile.Open(zipFile, ZipArchiveMode.Create);
+            _zipArchive = ZipFile.Open(_zipFilePath, ZipArchiveMode.Create);
         }
         catch (Exception e)
         {

@@ -41,7 +41,7 @@ public class BackupController
         {
             ArchiveQueue archiveQueue = new(drive);
             archiveQueues.Add(archiveQueue);
-            backupArchives.Add(new BackupArchives(archiveQueue));
+            backupArchives.Add(new BackupArchives(archiveQueue, folderPath));
         }
 
         BackupShared backupShared = new(dataPathsQueue, archiveQueues);
@@ -74,7 +74,7 @@ public class BackupController
         Stack<Thread> threadsProcess = new();
         foreach (var archive in _backupArchives)
         {
-            threadsArchive.Push(new Thread(() => archive.Start(_folderPath, cancellationToken.Token)));
+            threadsArchive.Push(new Thread(() => archive.Start(cancellationToken.Token)));
             threadsArchive.Peek().Start();
         }
 
