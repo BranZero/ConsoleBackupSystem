@@ -70,8 +70,6 @@ public class BackupArchives
             AddFile(fullPath, zipPath);
         }
 
-        //Get size of archive after complete
-
         Close();
     }
     /// <summary>
@@ -109,6 +107,9 @@ public class BackupArchives
         {
             _writeMutex.WaitOne();
             _zipArchive?.Dispose();
+
+            //Get size of archive after complete
+            _archiveBackupStat.Size = new FileInfo(_zipFilePath).Length;
         }
         catch (Exception e)
         {
