@@ -13,7 +13,7 @@ The ConsoleBackupSystem is a lightweight and efficient command-line tool designe
   - `ForceCopy`: Always copy files regardless of changes.
   - `AllOrNone`: Copy all files in a directory only if any file has changed.
   - `None`: Copy files only if they are not present in prior backups.
-- **Ignore Paths**: Specify paths to exclude from the backup process.
+- **Ignore Paths**: Specify directory and/or file names to exclude from the backup process.
 - **Incremental Backups**: Avoid redundant backups by checking prior backups.
 - **Compressed Archives**: Backups are stored as compressed `.zip` files for efficient storage.
 
@@ -28,7 +28,7 @@ The ConsoleBackupSystem is a lightweight and efficient command-line tool designe
 
 ### Add a Path
 ```bash 
-add [-options] <path> [pathsToIgnore...]
+add [-options] <path> [Files/DirectoriesNames...]
 ```
 #### Options
 - -f: Force add the path even if it doesn't exist.

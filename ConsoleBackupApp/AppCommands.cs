@@ -3,8 +3,24 @@ using ConsoleBackupApp.DataPaths;
 using ConsoleBackupApp.PriorBackup;
 
 namespace ConsoleBackupApp;
+
 public class AppCommands
 {
+    private const string HELP_MESSAGE = @"
+add [-options] <path> [Files/Directories Names To Ignore...]
+    -f : Force add the path even if it doesn't exist.
+    -c : Use ForceCopy mode (always copy files).
+    -a : Use AllOrNone mode (copy all files in a directory only if any file has changed).
+    Default: If no mode is specified, None mode is used (copy files only if not present or modified since prior backups).
+
+remove <path>
+
+list
+
+backup [-options] <destinationDirectory> [priorBackupDirectories...]
+    -n : Check for prior backups in destinationDirectory.
+    -c : Check for prior backups in the same folder.
+";
 
     /// <summary>
     /// Support only adding one path at a time and ignore paths after it
@@ -62,7 +78,7 @@ public class AppCommands
                 return Result.Invalid_Path;
             }
         }
-        
+
         if (options.Count > 0)
         {
             return Result.Invalid_Option;
@@ -158,7 +174,7 @@ public class AppCommands
                 return Result.Too_Few_Arguments;
             }
             ReadOnlySpan<string> argsLeft = new ReadOnlySpan<string>(args, index, args.Length - index);
-            if(!BackupCommandHelper.FindPriorBackupPathsByArgs(argsLeft, priorBackups))
+            if (!BackupCommandHelper.FindPriorBackupPathsByArgs(argsLeft, priorBackups))
             {
                 return Result.Invalid_Path;
             }
@@ -167,9 +183,14 @@ public class AppCommands
 
     }
 
-    internal static object Help(string[] args)
+    internal static string Help(string[] args)
     {
-        throw new NotImplementedException();
+        if (args.Length > 1)
+        {
+            return Result.Too_Many_Arguments.ToString();
+        }
+        return
+HELP_MESSAGE;
     }
 
     internal static string Version(string[] args)
