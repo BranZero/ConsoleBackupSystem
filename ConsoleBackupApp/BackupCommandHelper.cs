@@ -106,7 +106,7 @@ public class BackupCommandHelper
         try
         {
             BackupController controller = BackupController.Init(baseBackupFolder, dataPaths, priorBackups);
-            controller.Start();
+            controller.Start(true);
         }
         catch (Exception)
         {

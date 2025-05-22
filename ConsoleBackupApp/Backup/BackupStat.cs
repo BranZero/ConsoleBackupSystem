@@ -1,26 +1,23 @@
 namespace ConsoleBackupApp.Backup;
+
 public struct BackupStat
 {
-    private ulong _size;
-    private Mutex _mutexSize;
-    private uint _fileCalls;
-    private Mutex _mutexFileCalls;
-    public BackupStat(ulong fileSize = 0, uint fileCalls = 0) {
-        _mutexFileCalls = new Mutex();
-        _mutexSize = new Mutex();
-        _size = fileSize;
-        _fileCalls = fileCalls;
+    private const long MEGABYTE_TO_BYTE = 1_048_576;
+    public long Size;
+    public int FileCalls;
+    public BackupStat(long fileSize = 0, int fileCalls = 0)
+    {
+        Size = fileSize;
+        FileCalls = fileCalls;
     }
 
-    public void AddFileCall()
+    public static BackupStat operator +(BackupStat a, BackupStat b)
     {
-        _mutexFileCalls.WaitOne();
-        _fileCalls++;
-        _mutexFileCalls.ReleaseMutex();
+        return new BackupStat(a.Size + b.Size, a.FileCalls + b.FileCalls);
     }
 
-    public readonly uint GetFileCallCount()
+    public readonly long GetSizeInMegaBytes()
     {
-        return _fileCalls;
+        return Size / MEGABYTE_TO_BYTE;
     }
 }

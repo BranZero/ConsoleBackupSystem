@@ -12,11 +12,15 @@ public class BackupArchives
     private CancellationToken _cancellationToken;
     private Mutex _writeMutex;
     public readonly ArchiveQueue _archive;
+    private BackupStat _archiveBackupStat;
+    private readonly string _zipFilePath;
 
-    public BackupArchives(ArchiveQueue archiveQueue)
+    public BackupArchives(ArchiveQueue archiveQueue, string folderPath)
     {
         _writeMutex = new();
         _archive = archiveQueue;
+        _archiveBackupStat = new();
+        _zipFilePath = folderPath + _archive.Drive + ".zip";
     }
 
     /// <summary>
@@ -24,16 +28,15 @@ public class BackupArchives
     /// </summary>
     /// <param name="folderPath"></param>
     /// <param name="cancellationToken">if closed early with get everything from the archiveQueue</param>
-    public void Start(string folderPath, CancellationToken cancellationToken)
+    public void Start(CancellationToken cancellationToken)
     {
         _writeMutex.WaitOne();
         _cancellationToken = cancellationToken;
 
-        string zipFile = folderPath + _archive.Drive + ".zip";
         try
         {
             //Create the zip file
-            _zipArchive = ZipFile.Open(zipFile, ZipArchiveMode.Create);
+            _zipArchive = ZipFile.Open(_zipFilePath, ZipArchiveMode.Create);
         }
         catch (Exception e)
         {
@@ -51,7 +54,7 @@ public class BackupArchives
     {
         while (!_cancellationToken.IsCancellationRequested)
         {
-            if(!_archive.PathsToCopy.TryTake(out string? fullPath) || fullPath is null)
+            if (!_archive.PathsToCopy.TryTake(out string? fullPath) || fullPath is null)
             {
                 continue;
             }
@@ -86,6 +89,7 @@ public class BackupArchives
                 return;
             }
             _zipArchive.CreateEntryFromFile(filePath, entryName, COMPRESSION_LEVEL);
+            _archiveBackupStat.FileCalls++;
         }
         catch (Exception e)
         {
@@ -103,6 +107,9 @@ public class BackupArchives
         {
             _writeMutex.WaitOne();
             _zipArchive?.Dispose();
+
+            //Get size of archive after complete
+            _archiveBackupStat.Size = new FileInfo(_zipFilePath).Length;
         }
         catch (Exception e)
         {
@@ -114,4 +121,11 @@ public class BackupArchives
         }
         _writeMutex.Close();
     }
+
+    //Get archieve's stats
+    public BackupStat GetArchivesStats()
+    {
+        return _archiveBackupStat;
+    }
+    
 }

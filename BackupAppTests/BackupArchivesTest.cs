@@ -53,7 +53,7 @@ public class BackupArchivesTest
     {
         _archiveQueue = new ArchiveQueue(_currentDrive);
         _cancellationTokenSource = new CancellationTokenSource();
-        _backupArchives = new BackupArchives(_archiveQueue);
+        _backupArchives = new BackupArchives(_archiveQueue, _archiveFolder);
     }
     [TearDown]
     public void TearDown()
@@ -76,7 +76,7 @@ public class BackupArchivesTest
 
         // Act
         _cancellationTokenSource.CancelAfter(10);//exit loop
-        _backupArchives.Start(_archiveFolder, _cancellationTokenSource.Token);
+        _backupArchives.Start(_cancellationTokenSource.Token);
 
         // Assert
         Assert.Pass("No exceptions thrown for empty queue.");
@@ -91,7 +91,7 @@ public class BackupArchivesTest
 
         // Act
         _cancellationTokenSource.CancelAfter(10);//exit loop
-        _backupArchives.Start(_archiveFolder, _cancellationTokenSource.Token);
+        _backupArchives.Start(_cancellationTokenSource.Token);
         using ZipArchive zipArchive = ZipFile.Open(zipFile, ZipArchiveMode.Read);
 
         // Assert
@@ -113,7 +113,7 @@ public class BackupArchivesTest
 
         // Act
         _cancellationTokenSource.CancelAfter(10);//exit loop
-        _backupArchives.Start(_archiveFolder, _cancellationTokenSource.Token);
+        _backupArchives.Start(_cancellationTokenSource.Token);
         using ZipArchive zipArchive = ZipFile.Open(zipFile, ZipArchiveMode.Read);
 
         // Assert
@@ -138,7 +138,7 @@ public class BackupArchivesTest
 
         // Act
         _cancellationTokenSource.Cancel();//exit loop
-        _backupArchives.Start(_archiveFolder, _cancellationTokenSource.Token);
+        _backupArchives.Start(_cancellationTokenSource.Token);
         using ZipArchive zipArchive = ZipFile.Open(zipFile, ZipArchiveMode.Read);
 
         // Assert

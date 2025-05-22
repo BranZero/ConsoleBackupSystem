@@ -41,7 +41,7 @@ public class BackupController
         {
             ArchiveQueue archiveQueue = new(drive);
             archiveQueues.Add(archiveQueue);
-            backupArchives.Add(new BackupArchives(archiveQueue));
+            backupArchives.Add(new BackupArchives(archiveQueue, folderPath));
         }
 
         BackupShared backupShared = new(dataPathsQueue, archiveQueues);
@@ -56,8 +56,11 @@ public class BackupController
         }
         return new(folderPath, backupShared, backupArchives, backupProcesses, priorBackupsList);
     }
-    public Result Start()
+    public Result Start(bool logStats = false)
     {
+        //Setup Stats Tracking
+        DateTime startTime = DateTime.Now;
+
         if (_backupShared.DataPathsIsEmpty())
         {
             return Result.Empty;
@@ -74,7 +77,7 @@ public class BackupController
         Stack<Thread> threadsProcess = new();
         foreach (var archive in _backupArchives)
         {
-            threadsArchive.Push(new Thread(() => archive.Start(_folderPath, cancellationToken.Token)));
+            threadsArchive.Push(new Thread(() => archive.Start(cancellationToken.Token)));
             threadsArchive.Peek().Start();
         }
 
@@ -99,8 +102,32 @@ public class BackupController
             thread.Join();
         }
 
+        //Log Time Taken And BackupStats
+        if (logStats)
+        {
+            GetBackupStats(startTime);
+        }
 
         return Result.Success;
+    }
+
+    //Log Time Taken And BackupStats
+    private BackupStat GetBackupStats(DateTime startTime)
+    {
+        //Retieve Data
+        TimeSpan timeTaken = DateTime.Now - startTime;
+        BackupStat backupStat = new();
+
+        foreach (BackupArchives archive in _backupArchives)
+        {
+            backupStat += archive.GetArchivesStats();
+        }
+
+        //Log
+        Logger.Instance.Log(LogLevel.Info, $"Backup Took: {timeTaken.TotalSeconds} seconds");
+        Logger.Instance.Log(LogLevel.Info, $"Backup Copied {backupStat.FileCalls}");
+        Logger.Instance.Log(LogLevel.Info, $"Backup Compressed Size {backupStat.GetSizeInMegaBytes()} MB");
+        return backupStat;
     }
 
     private bool SetupBackupDirectory(string path)
