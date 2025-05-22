@@ -42,6 +42,10 @@ backup [-options] <destinationDirectory> [priorBackupDirectories...]
         {
             return optResult;
         }
+        else if (optResult == Result.Valid_Option)
+        {
+            index++;
+        }
 
         //CopyMode Checks (Mutually Exclusive)
         if (options.Remove('c'))//ForceCopy
@@ -54,12 +58,8 @@ backup [-options] <destinationDirectory> [priorBackupDirectories...]
         }
 
         //PathType Checks
-        if (options.Remove('f'))
-        {
-            //-f force is option to overwrite the check if it exists in the directory
-            index++;
-        }
-        else
+        //-f force is option to overwrite the check if it exists in the directory
+        if (!options.Remove('f'))
         {
             if (File.Exists(args[index]))
             {

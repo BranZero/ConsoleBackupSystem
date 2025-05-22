@@ -1,13 +1,25 @@
+using BackupAppTests.TestingTools;
 using ConsoleBackupApp;
 using ConsoleBackupApp.DataPaths;
 
 namespace BackupAppTests;
+
 public class AppCommandsAddAndRemoveTests
 {
+    private string _currentPath;
+    private string _testFilesFolder;
+    private string _testFile;
+    private string _testFileSpace;
     [OneTimeSetUp]
     public void Setup()
     {
-        // Setup code if needed
+        _currentPath = Path.GetFullPath(Directory.GetCurrentDirectory());
+        _currentPath += (_currentPath[^1] != Path.DirectorySeparatorChar) ? Path.DirectorySeparatorChar : "";
+        _testFilesFolder = _currentPath + "FileTest" + Path.DirectorySeparatorChar;
+        Directory.CreateDirectory(_testFilesFolder);
+        _testFile = FileTools.CreateTestFile(_testFilesFolder, "test.txt", "nothing");
+        _testFileSpace = FileTools.CreateTestFile(_testFilesFolder, "test space.txt", "nothingtwo");
+
         if (File.Exists(DataFileManager.DATA_PATH_FILE))
         {
             File.Delete(DataFileManager.DATA_PATH_FILE);
@@ -17,6 +29,17 @@ public class AppCommandsAddAndRemoveTests
     [TearDown]
     public void TearDown()
     {
+        if (File.Exists(DataFileManager.DATA_PATH_FILE))
+        {
+            File.Delete(DataFileManager.DATA_PATH_FILE);
+        }
+    }
+
+    [OneTimeTearDown]
+    public void ConfigCleanup()
+    {
+        GC.Collect();
+        Directory.Delete(_testFilesFolder, true);
         if (File.Exists(DataFileManager.DATA_PATH_FILE))
         {
             File.Delete(DataFileManager.DATA_PATH_FILE);
@@ -68,19 +91,41 @@ public class AppCommandsAddAndRemoveTests
     }
 
     [Test]
-    public void Add_CopyMode()
+    public void Add_CopyModeFile()
     {
         // Arrange
-        string[] args = { "add", "-fc", "C:\\ValidFile.txt" };
+        string[] args = ["add", "-c", _testFile];
 
         // Act
         var result = AppCommands.Add(args);
         DataPath[] dataPaths = DataFileManager.GetDataPaths();
 
         // Assert
-        Assert.That(result, Is.EqualTo(Result.Success));
-        Assert.That(dataPaths, Has.Length.EqualTo(1));
-        Assert.That(dataPaths[0].FileCopyMode, Is.EqualTo(CopyMode.ForceCopy));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.EqualTo(Result.Success));
+            Assert.That(dataPaths, Has.Length.EqualTo(1));
+            Assert.That(dataPaths[0].FileCopyMode, Is.EqualTo(CopyMode.ForceCopy));
+            Assert.That(dataPaths[0].SourcePath, Is.EqualTo(_testFile));
+        });
+    }
+
+    [Test]
+    public void Add_TwoCopyMode_InvalidOption()
+    {
+        // Arrange
+        string[] args = ["add", "-ac", _testFile];
+
+        // Act
+        var result = AppCommands.Add(args);
+        DataPath[] dataPaths = DataFileManager.GetDataPaths();
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.EqualTo(Result.Invalid_Option));
+            Assert.That(dataPaths, Has.Length.EqualTo(0));
+        });
     }
 
     [Test]
@@ -102,20 +147,25 @@ public class AppCommandsAddAndRemoveTests
     }
 
     [Test]
-    public void Add_ForceValidDirectoryPathWithIgnore_ReturnsSuccess()
+    public void Add_ValidDirectory_WithIgnore_ReturnsSuccess()
     {
         // Arrange
-        string[] args = { "add", "-f", "C:\\ValidDirectory\\", "C:\\ValidDirectory\\bin\\" };
+        string[] args = { "add", "-a", _testFilesFolder, "test space.txt" };
 
         // Act
         var result = AppCommands.Add(args);
         DataPath[] dataPaths = DataFileManager.GetDataPaths();
 
         // Assert
-        Assert.That(result, Is.EqualTo(Result.Success));
-        Assert.That(dataPaths, Has.Length.EqualTo(1));
-        Assert.That(dataPaths[0].IgnorePaths, Has.Length.EqualTo(1));
-        Assert.That(dataPaths[0].IgnorePaths[0], Is.EqualTo("C:\\ValidDirectory\\bin\\"));
+        Assert.Multiple(() =>
+        {
+            // Assert
+            Assert.That(result, Is.EqualTo(Result.Success));
+            Assert.That(dataPaths, Has.Length.EqualTo(1));
+            Assert.That(dataPaths[0].IgnorePaths, Has.Length.EqualTo(1));
+            Assert.That(dataPaths[0].IgnorePaths[0], Is.Not.Null);
+            Assert.That(dataPaths[0].IgnorePaths[0], Is.EqualTo("test space.txt"));
+        });
 
     }
 
@@ -155,7 +205,7 @@ public class AppCommandsAddAndRemoveTests
     public void Add_SubPath_ReturnsExists()
     {
         // Arrange
-        string[] args = { "add", "-f", "C:\\ExistingPath\\"};
+        string[] args = { "add", "-f", "C:\\ExistingPath\\" };
         string[] args2 = { "add", "-f", "C:\\ExistingPath\\SubFile.txt " };
 
         // Act
