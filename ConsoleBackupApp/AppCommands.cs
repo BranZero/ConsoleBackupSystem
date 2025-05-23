@@ -248,6 +248,7 @@ public enum Result
     Failure,
     Error,
     SubPath_Or_SamePath,
+    Invalid_Path,
 
     //Argument Issues
     Too_Few_Arguments,
@@ -258,5 +259,4 @@ public enum Result
     Duplicate_Option,
     Valid_Option,
     No_Options,
-    Invalid_Path,
 }
