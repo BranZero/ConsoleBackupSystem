@@ -117,24 +117,22 @@ backup [-options] <destinationDirectory> [priorBackupDirectories...]
         return Result.Failure;
     }
 
-    internal static Result Backup(string[] args)
+    public static Result Backup(string[] args)
     {
         int index = 1;
         if (args.Length < 2)
         { // Check if their are arguments passed in
-            Console.WriteLine("Error: no arguments passed in.");
             return Result.Too_Few_Arguments;
         }
 
         //Select Options
         bool checkSecondaryPriorBackups = false;
         bool checkForBackupsInFolder = false;
-        Result optResult = CheckOptions(args[index], out HashSet<char> options);
+        Result optResult = CheckOptions(args[index++], out HashSet<char> options);
         if (optResult == Result.Valid_Option)
         {
             checkSecondaryPriorBackups = options.Remove('n');
             checkForBackupsInFolder = options.Remove('c');
-            index++;
             if (options.Count > 0)
             {
                 return Result.Invalid_Option;
@@ -145,8 +143,8 @@ backup [-options] <destinationDirectory> [priorBackupDirectories...]
             return optResult;
         }
 
-        //Check Backup Directory
-        string backupDir = args[index];
+        //Valid Destination Directory of Backup
+        string backupDir = args[index++];
         if (Directory.Exists(backupDir))
         {
             if (backupDir[^1] != Path.DirectorySeparatorChar)
@@ -159,28 +157,24 @@ backup [-options] <destinationDirectory> [priorBackupDirectories...]
             return Result.Invalid_Path;
         }
 
-        //Check Prior Backups if Checked
-        List<PriorBackupPath> priorBackups = [];
-        if (checkForBackupsInFolder)
-        {
-            //Check in same folder as destination path
-            BackupCommandHelper.FindPriorBackupPathsInDirectory(backupDir, priorBackups);
-        }
+        //Check Prior Backup Directories
+        List<PriorBackupPath> priorBackups;
+        ReadOnlySpan<string> argsLeft = [];
         if (checkSecondaryPriorBackups)
         {
-            index++;
             if (args.Length <= index)
             {
                 return Result.Too_Few_Arguments;
             }
-            ReadOnlySpan<string> argsLeft = new ReadOnlySpan<string>(args, index, args.Length - index);
-            if (!BackupCommandHelper.FindPriorBackupPathsByArgs(argsLeft, priorBackups))
-            {
-                return Result.Invalid_Path;
-            }
+            argsLeft = new ReadOnlySpan<string>(args, index, args.Length - index);
         }
-        return BackupCommandHelper.BackupData(backupDir, priorBackups);//if priorBackups is empty don't check prior backups
+        Result result = BackupCommandHelper.GetPriorBackupPaths(backupDir, argsLeft, checkForBackupsInFolder, out priorBackups);
+        if (result != Result.Success)
+        {
+            return result;
+        }
 
+        return BackupCommandHelper.BackupData(backupDir, priorBackups);//if priorBackups is empty don't check prior backups
     }
 
     internal static string Help(string[] args)
