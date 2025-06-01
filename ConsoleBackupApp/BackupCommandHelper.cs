@@ -1,7 +1,3 @@
-
-
-
-using ConsoleBackupApp;
 using ConsoleBackupApp.Backup;
 using ConsoleBackupApp.DataPaths;
 using ConsoleBackupApp.Logging;
@@ -16,7 +12,7 @@ public class BackupCommandHelper
     /// <param name="priorBackups"></param>
     /// <param name="folderPath"></param>
     /// <returns>true if an error occured during this process</returns>
-    public static void FindPriorBackupPathsInDirectory(string backupDir, List<PriorBackupPath> priorBackupPaths)
+    private static void FindPriorBackupPathsInDirectory(string backupDir, List<PriorBackupPath> priorBackupPaths)
     {
         if (!Directory.Exists(backupDir))
         {
@@ -57,7 +53,7 @@ public class BackupCommandHelper
         return backupDir + temp + Path.DirectorySeparatorChar;
     }
 
-    internal static bool FindPriorBackupPathsByArgs(ReadOnlySpan<string> argsLeft, List<PriorBackupPath> priorBackupPaths)
+    private static bool FindPriorBackupPathsByArgs(ReadOnlySpan<string> argsLeft, List<PriorBackupPath> priorBackupPaths)
     {
         for (int i = 0; i < argsLeft.Length; i++)
         {
@@ -81,7 +77,26 @@ public class BackupCommandHelper
         return true;
     }
 
-    internal static Result BackupData(string backupDir, List<PriorBackupPath> priorBackups)
+    public static Result GetPriorBackupPaths(string backupDir, ReadOnlySpan<string> args, bool checkForBackupsInFolder, out List<PriorBackupPath> priorBackups)
+    {
+        priorBackups = [];
+        if (checkForBackupsInFolder)
+        {
+            //Check in same folder as destination path
+            FindPriorBackupPathsInDirectory(backupDir, priorBackups);
+        }
+        if (args.Length > 0)
+        {
+            if (!FindPriorBackupPathsByArgs(args, priorBackups))
+            {
+                return Result.Invalid_Path;
+            }
+        }
+        return Result.Success;
+    }
+
+    //Collect DataPaths and StartBackup Process
+    public static Result BackupData(string backupDir, List<PriorBackupPath> priorBackups)
     {
         List<DataPath> dataPaths = ValidDataPaths();
 
@@ -99,7 +114,7 @@ public class BackupCommandHelper
             if (backupDir.StartsWith(dataPath.SourcePath))
             {
                 Logger.Instance.Log(LogLevel.Error, $"The selected backup path is a sub path of a directory to be backedup {dataPath.SourcePath} in {backupDir}");
-                return Result.Error;
+                return Result.Invalid_Path;
             }
         }
 

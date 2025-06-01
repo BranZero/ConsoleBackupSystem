@@ -273,7 +273,7 @@ public class AppCommandsAddAndRemoveTests
     public void Remove_ValidPathExists_ReturnsSuccess()
     {
         // Arrange
-        string[] args = { "remove", "-f", "C:\\ExistingPath\\" };
+        string[] args = { "add", "-f", "C:\\ExistingPath\\" };
         string[] args2 = { "remove", "C:\\ExistingPath\\" };
 
         // Act
