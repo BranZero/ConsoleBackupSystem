@@ -16,7 +16,7 @@ public class Program
         }
 
         string? input;
-        while (true) //'exit' with close the program
+        do
         {
             input = Console.ReadLine();
             if (input is null)
@@ -27,6 +27,7 @@ public class Program
             string result = Command(args);
             Console.WriteLine(result);
         }
+        while (input != "exit"); //'exit' with close the program
     }
 
     public static string[] GetArgs(string input)
