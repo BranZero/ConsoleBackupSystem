@@ -29,7 +29,7 @@ public class Program
         }
     }
 
-    private static string[] GetArgs(string input)
+    public static string[] GetArgs(string input)
     {
         var args = new List<string>();
         var currentArg = new StringBuilder();
@@ -53,7 +53,7 @@ public class Program
             //Double Quote Block
             else if (c == '\"' && !singleQuoteBlock && !doubleQuoteBlock)
             {
-                singleQuoteBlock = true;
+                doubleQuoteBlock = true;
                 continue;
             }
             else if (c == '\"' && doubleQuoteBlock)
