@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 
 namespace ConsoleBackupApp.Logging;
+
 public class Logger
 {
     private static readonly Lazy<Logger> _instance = new(() => new Logger(), true);
@@ -43,12 +44,29 @@ public class Logger
 
         while (!_token.IsCancellationRequested)
         {
-            await Task.Delay(100, token); //for last second log messages have delay before Dequeue
-            while (_logQueue.TryTake(out string? logEntry))
+            try
             {
-                await File.AppendAllTextAsync(Log_File_Path, logEntry + Environment.NewLine);
+                await Task.Delay(100, _token); //for last second log messages have delay before Dequeue
+                while (_logQueue.TryTake(out string? logEntry))
+                {
+                    await File.AppendAllTextAsync(Log_File_Path, logEntry + Environment.NewLine);
+                }
+            }
+            catch (TaskCanceledException)
+            {
+                await FinishLoggingProcess();
+                return;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Fatal Error Occured:" + e.StackTrace);
             }
         }
+        await FinishLoggingProcess();
+    }
+
+    private async Task FinishLoggingProcess()
+    {
         //empty queue
         _logQueue.CompleteAdding();
         foreach (string logEntry in _logQueue.GetConsumingEnumerable())
