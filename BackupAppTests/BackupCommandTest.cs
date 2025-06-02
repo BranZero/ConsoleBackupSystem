@@ -256,4 +256,23 @@ public class BackupCommandTest
         });
 
     }
+
+    [Test]
+    public void BackupCommand_BackupSimple_Success()
+    {
+        // Arrange
+        string[] addArgs = ["add", _testFiles[2]];
+        Result addResult = AppCommands.Add(addArgs);
+
+        // Act
+        string[] backupArgs = ["backup", _archiveFolder];
+        Result backupResult = AppCommands.Backup(backupArgs);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(addResult, Is.EqualTo(Result.Success));
+            Assert.That(backupResult, Is.EqualTo(Result.Success));
+        });
+    }
 }
