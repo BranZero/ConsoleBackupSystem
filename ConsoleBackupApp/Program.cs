@@ -29,7 +29,7 @@ public class Program
         }
     }
 
-    private static string[] GetArgs(string input)
+    public static string[] GetArgs(string input)
     {
         var args = new List<string>();
         var currentArg = new StringBuilder();
