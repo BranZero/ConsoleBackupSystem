@@ -63,7 +63,7 @@ public class AppCommandsAddAndRemoveTests
     public void Add_InvalidPath_ReturnsInvalidPath()
     {
         // Arrange
-        string[] args = { "add", "Z:\\InvalidPath" };
+        string[] args = ["add", "Z:\\InvalidPath"];
 
         // Act
         var result = AppCommands.Add(args);
@@ -76,7 +76,7 @@ public class AppCommandsAddAndRemoveTests
     public void Add_ForceValidFilePath_ReturnsSuccess()
     {
         // Arrange
-        string[] args = { "add", "-f", "C:\\ValidFile.txt" };
+        string[] args = ["add", "-f", "C:\\ValidFile.txt"];
 
         DataPath.Init(PathType.Directory, CopyMode.None, new ReadOnlySpan<string>(args, 2, 1), out DataPath dataPath);
         int expectedFileSize = DPF.HEADER_SIZE + DPF.ToDataRowSize(dataPath);
@@ -129,17 +129,17 @@ public class AppCommandsAddAndRemoveTests
     }
 
     [Test]
-    public void Add_ForceValidDirectoryPath_ReturnsSuccess()
+    public void Add_ValidDirectoryPath_ReturnsSuccess()
     {
         // Arrange
-        string[] args = { "add", "-f", "C:\\ValidDirectory\\" };
+        string[] args = ["add", _testFilesFolder];
 
-        DataPath.Init(PathType.Directory, CopyMode.None, new ReadOnlySpan<string>(args, 2, 1), out DataPath dataPath);
+        DataPath.Init(PathType.Directory, CopyMode.None, new ReadOnlySpan<string>(args, 1, 1), out DataPath dataPath);
         int expectedFileSize = DPF.HEADER_SIZE + DPF.ToDataRowSize(dataPath);
 
         // Act
         var result = AppCommands.Add(args);
-        FileInfo fileInfo = new FileInfo(DataFileManager.DATA_PATH_FILE);
+        FileInfo fileInfo = new(DataFileManager.DATA_PATH_FILE);
 
         // Assert
         Assert.That(result, Is.EqualTo(Result.Success));
@@ -150,7 +150,7 @@ public class AppCommandsAddAndRemoveTests
     public void Add_ValidDirectory_WithIgnore_ReturnsSuccess()
     {
         // Arrange
-        string[] args = { "add", "-a", _testFilesFolder, "test space.txt" };
+        string[] args = ["add", "-a", _testFilesFolder, "test space.txt"];
 
         // Act
         var result = AppCommands.Add(args);
@@ -170,51 +170,40 @@ public class AppCommandsAddAndRemoveTests
     }
 
     [Test]
-    public void Add_ForcePathAlreadyExists_ReturnsExists()
+    public void Add_PathAlreadyExists_ReturnsExists()
     {
         // Arrange
-        string[] args = { "add", "-f", "C:\\ExistingPath\\" };
+        string[] args = ["add", _testFile];
 
         // Act
         var result = AppCommands.Add(args);
         var result2 = AppCommands.Add(args);
 
         // Assert
-        Assert.That(result, Is.EqualTo(Result.Success));
-        Assert.That(result2, Is.EqualTo(Result.SubPath_Or_SamePath));
-    }
-
-    [Test]
-    public void Add_DuplicatePaths_ReturnsExists()
-    {
-        // Arrange
-        string[] args = { "add", "-f", "C:\\ExistingPath\\" };
-        string[] args2 = { "add", "-f", "C:\\ExistingPath\\" };
-
-
-        // Act
-        var result = AppCommands.Add(args);
-        var result2 = AppCommands.Add(args);
-
-        // Assert
-        Assert.That(result, Is.EqualTo(Result.Success));
-        Assert.That(result2, Is.EqualTo(Result.SubPath_Or_SamePath));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.EqualTo(Result.Success));
+            Assert.That(result2, Is.EqualTo(Result.SubPath_Or_SamePath));
+        });
     }
 
     [Test]
     public void Add_SubPath_ReturnsExists()
     {
         // Arrange
-        string[] args = { "add", "-f", "C:\\ExistingPath\\" };
-        string[] args2 = { "add", "-f", "C:\\ExistingPath\\SubFile.txt " };
+        string[] args = ["add", "-f", "C:\\ExistingPath\\"];
+        string[] args2 = ["add", "-f", "C:\\ExistingPath\\SubFile.txt "];
 
         // Act
         var result = AppCommands.Add(args);
-        var result2 = AppCommands.Add(args);
+        var result2 = AppCommands.Add(args2);
 
         // Assert
-        Assert.That(result, Is.EqualTo(Result.Success));
-        Assert.That(result2, Is.EqualTo(Result.SubPath_Or_SamePath));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.EqualTo(Result.Success));
+            Assert.That(result2, Is.EqualTo(Result.SubPath_Or_SamePath));
+        });
     }
 
     [Test]
@@ -234,7 +223,7 @@ public class AppCommandsAddAndRemoveTests
     public void Remove_TooManyArguments_ReturnsTooManyArguments()
     {
         // Arrange
-        string[] args = { "remove", "C:\\Path1", "C:\\Path2" };
+        string[] args = ["remove", _testFile, _testFileSpace];
 
         // Act
         var result = AppCommands.Remove(args);
@@ -247,7 +236,7 @@ public class AppCommandsAddAndRemoveTests
     public void Remove_InvalidOption_ReturnsInvalidOption()
     {
         // Arrange
-        string[] args = { "remove", "-x" };
+        string[] args = ["remove", "-x"];
 
         // Act
         var result = AppCommands.Remove(args);
@@ -260,7 +249,7 @@ public class AppCommandsAddAndRemoveTests
     public void Remove_ValidPathDoesNotExist_ReturnsFailure()
     {
         // Arrange
-        string[] args = { "remove", "C:\\NonExistentPath\\" };
+        string[] args = ["remove", _testFileSpace + "Invalid"];
 
         // Act
         var result = AppCommands.Remove(args);
@@ -270,20 +259,65 @@ public class AppCommandsAddAndRemoveTests
     }
 
     [Test]
-    public void Remove_ValidPathExists_ReturnsSuccess()
+    public void Remove_ValidFilePathExists_ReturnsSuccess()
     {
         // Arrange
-        string[] args = { "add", "-f", "C:\\ExistingPath\\" };
-        string[] args2 = { "remove", "C:\\ExistingPath\\" };
+        string[] args = ["add", _testFile];
+        string[] args2 = ["remove", _testFile];
 
         // Act
         var result = AppCommands.Add(args);
         var result2 = AppCommands.Remove(args2);
-        FileInfo fileInfo = new FileInfo(DataFileManager.DATA_PATH_FILE);
+        FileInfo fileInfo = new(DataFileManager.DATA_PATH_FILE);
 
         // Assert
-        Assert.That(result, Is.EqualTo(Result.Success));
-        Assert.That(result2, Is.EqualTo(Result.Success));
-        Assert.That(fileInfo.Length, Is.EqualTo(DPF.HEADER_SIZE));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.EqualTo(Result.Success));
+            Assert.That(result2, Is.EqualTo(Result.Success));
+            Assert.That(fileInfo.Length, Is.EqualTo(DPF.HEADER_SIZE));
+        });
+    }
+
+    [Test]
+    public void Remove_ValidFolderPathExists_ReturnsFailure()
+    {
+        // Arrange
+        string[] args = ["add", _testFilesFolder];
+        string[] args2 = ["remove", _testFilesFolder];
+
+        // Act
+        var result = AppCommands.Add(args);
+        var result2 = AppCommands.Remove(args2);
+        FileInfo fileInfo = new(DataFileManager.DATA_PATH_FILE);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.EqualTo(Result.Success));
+            Assert.That(result2, Is.EqualTo(Result.Success));
+            Assert.That(fileInfo.Length, Is.EqualTo(DPF.HEADER_SIZE));
+        });
+    }
+
+    [Test]
+    public void Remove_ValidSubPathExists_ReturnsSuccess()
+    {
+        // Arrange
+        string[] args = ["add", _testFilesFolder];
+        string[] args2 = ["remove", _testFileSpace];
+
+        // Act
+        var result = AppCommands.Add(args);
+        var result2 = AppCommands.Remove(args2);
+        DataPath[] dataPaths = DataFileManager.GetDataPaths();
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.EqualTo(Result.Success));
+            Assert.That(result2, Is.EqualTo(Result.Failure));
+            Assert.That(dataPaths, Has.Length.EqualTo(1));
+        });
     }
 }
