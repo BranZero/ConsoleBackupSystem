@@ -30,6 +30,12 @@ public class BackupCommandTest
         // Create test files with content
         _testFiles = FileTools.CreateTestDirectories(_testFilesFolder, out List<string> testDirectories);
         _testDirectories = testDirectories;
+
+        //Ensure no DATA_PATH_FILE exists at start or could cause unexpected results
+        if (File.Exists(DataFileManager.DATA_PATH_FILE))
+        {
+            File.Delete(DataFileManager.DATA_PATH_FILE);
+        }
     }
 
     [OneTimeTearDown]
@@ -44,6 +50,10 @@ public class BackupCommandTest
     public void TearDown()
     {
         GC.Collect();
+        if (File.Exists(DataFileManager.DATA_PATH_FILE))
+        {
+            File.Delete(DataFileManager.DATA_PATH_FILE);
+        }
     }
 
     [Test]
