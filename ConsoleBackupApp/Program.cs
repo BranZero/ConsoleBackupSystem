@@ -53,7 +53,7 @@ public class Program
             //Double Quote Block
             else if (c == '\"' && !singleQuoteBlock && !doubleQuoteBlock)
             {
-                singleQuoteBlock = true;
+                doubleQuoteBlock = true;
                 continue;
             }
             else if (c == '\"' && doubleQuoteBlock)
