@@ -30,6 +30,12 @@ public class BackupCommandTest
         // Create test files with content
         _testFiles = FileTools.CreateTestDirectories(_testFilesFolder, out List<string> testDirectories);
         _testDirectories = testDirectories;
+
+        //Ensure no DATA_PATH_FILE exists at start or could cause unexpected results
+        if (File.Exists(DataFileManager.DATA_PATH_FILE))
+        {
+            File.Delete(DataFileManager.DATA_PATH_FILE);
+        }
     }
 
     [OneTimeTearDown]
@@ -44,6 +50,10 @@ public class BackupCommandTest
     public void TearDown()
     {
         GC.Collect();
+        if (File.Exists(DataFileManager.DATA_PATH_FILE))
+        {
+            File.Delete(DataFileManager.DATA_PATH_FILE);
+        }
     }
 
     [Test]
@@ -255,5 +265,24 @@ public class BackupCommandTest
             FileTools.TestDoFilesMatch(_testFiles[1], zipPath);
         });
 
+    }
+
+    [Test]
+    public void BackupCommand_BackupSimple_Success()
+    {
+        // Arrange
+        string[] addArgs = ["add", _testFiles[2]];
+        Result addResult = AppCommands.Add(addArgs);
+
+        // Act
+        string[] backupArgs = ["backup", _archiveFolder];
+        Result backupResult = AppCommands.Backup(backupArgs);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(addResult, Is.EqualTo(Result.Success));
+            Assert.That(backupResult, Is.EqualTo(Result.Success));
+        });
     }
 }

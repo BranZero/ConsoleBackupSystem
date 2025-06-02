@@ -128,9 +128,10 @@ backup [-options] <destinationDirectory> [priorBackupDirectories...]
         //Select Options
         bool checkSecondaryPriorBackups = false;
         bool checkForBackupsInFolder = false;
-        Result optResult = CheckOptions(args[index++], out HashSet<char> options);
+        Result optResult = CheckOptions(args[index], out HashSet<char> options);
         if (optResult == Result.Valid_Option)
         {
+            index++;
             checkSecondaryPriorBackups = options.Remove('n');
             checkForBackupsInFolder = options.Remove('c');
             if (options.Count > 0)
