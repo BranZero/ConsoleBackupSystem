@@ -6,6 +6,9 @@ namespace ConsoleBackupApp;
 
 public class AppCommands
 {
+    private const char FORCE_COPY = 'c';
+    private const char ALL_OR_NONE = 'a';
+
     private const string HELP_MESSAGE = @"
 add [-options] <path> [Files/Directories Names To Ignore...]
     -f : Force add the path even if it doesn't exist.
@@ -48,13 +51,13 @@ backup [-options] <destinationDirectory> [priorBackupDirectories...]
         }
 
         //CopyMode Checks (Mutually Exclusive)
-        if (options.Remove('c'))//ForceCopy
+        if (options.Remove(FORCE_COPY))//ForceCopy
         {
-            copyMode = CopyModeExtensions.FromChar('c');
+            copyMode = CopyModeExtensions.FromChar(FORCE_COPY);
         }
-        else if (options.Remove('a'))//AllOrNone
+        else if (options.Remove(ALL_OR_NONE))//AllOrNone
         {
-            copyMode = CopyModeExtensions.FromChar('a');
+            copyMode = CopyModeExtensions.FromChar(ALL_OR_NONE);
         }
 
         //PathType Checks
@@ -238,6 +241,59 @@ HELP_MESSAGE;
             }
         }
         return Result.Valid_Option;
+    }
+
+    /// <summary>
+    /// Sets the CopyMode of a DataPath based on updatec [option] <sourcePath>
+    /// </summary>
+    /// <param name="args"></param>
+    /// <returns>result of command</returns>
+    public static string UpdateCopyMode(string[] args)
+    {
+        if (args.Length != 3)
+        {
+            return "Usage: updatec [-copyMode] <sourcePath>";
+        }
+        int index = 1;
+        Result optResult = CheckOptions(args[index], out HashSet<char> options);
+        if (optResult == Result.Valid_Option)
+        {
+            index++;
+            if (options.Count != 1)
+            {
+                return "Usage: updatec accepts either a = AllOrNone or c = ForceCopy or no option for default mode";
+            }
+            if (options.Remove(FORCE_COPY))
+            {
+                if (!DataFileManager.TryUpdateDataPathCopyMode(args[index], CopyMode.ForceCopy))
+                {
+                    return $"DataPath Not Found: {args[index]}";
+                }
+            }
+            else if (options.Remove(ALL_OR_NONE))
+            {
+                if (!DataFileManager.TryUpdateDataPathCopyMode(args[index], CopyMode.AllOrNone))
+                {
+                    return $"DataPath Not Found: {args[index]}";
+                }
+            }
+            else
+            {
+                return "Usage: updatec accepts either a = AllOrNone or c = ForceCopy or no option for default mode";
+            }
+        }
+        else if (optResult == Result.No_Options)
+        { // Default mode
+            if (!DataFileManager.TryUpdateDataPathCopyMode(args[index], CopyMode.None))
+            {
+                return $"DataPath Not Found: {args[index]}";
+            }
+        }
+        else
+        {
+            return optResult.ToString();
+        }
+        return Result.Success.ToString();
     }
 }
 

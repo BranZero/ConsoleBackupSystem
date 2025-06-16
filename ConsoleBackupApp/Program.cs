@@ -101,6 +101,8 @@ public class Program
                 return AppCommands.Add(args).ToString();
             case "remove":
                 return AppCommands.Remove(args).ToString();
+            case "updatec":
+                return AppCommands.UpdateCopyMode(args);
             case "help":
                 return AppCommands.Help(args).ToString();
             case "version":

@@ -43,8 +43,10 @@ public class DataFileManager
         for (int i = 0; i < dataPaths.Count; i++)
         {
             string sourcePath = dataPaths[i].SourcePath;
-            if(sourcePath.Length == s.Length || sourcePath.Length == s.Length+1){
-                if(s[0] == dataPaths[i].Drive && sourcePath.StartsWith(s)){
+            if (sourcePath.Length == s.Length || sourcePath.Length == s.Length + 1)
+            {
+                if (s[0] == dataPaths[i].Drive && sourcePath.StartsWith(s))
+                {
                     //Found
                     dataPaths.RemoveAt(i);
                     byte[] data = DPF.CreateFile(dataPaths.ToArray());
@@ -54,6 +56,31 @@ public class DataFileManager
             }
         }
         return false;
+    }
+    /// <summary>
+    /// Updates an existing DataPath by sourcePath. Allows changing CopyMode and IgnorePaths.
+    /// </summary>
+    /// <param name="sourcePath">The source path to update</param>
+    /// <param name="copyMode">Optional new CopyMode</param>
+    /// <param name="ignorePaths">Optional new ignore paths</param>
+    /// <returns>True if updated, false if not found</returns>
+    public static bool TryUpdateDataPathCopyMode(string sourcePath, CopyMode copyMode)
+    {
+        DataPath[] dataPaths = GetDataPaths();
+        int index = Array.FindIndex(dataPaths, dp => (
+            dp.SourcePath.Equals(sourcePath, StringComparison.Ordinal)
+        ));
+        if (index == -1)
+        {
+            return false;
+        }
+        //Continue working on
+        DataPath old = dataPaths[index];
+        CopyMode newCopyMode = copyMode;
+
+        byte[] data = DPF.CreateFile(dataPaths);
+        WriteDataFile(data);
+        return true;
     }
 
     public static DataPath[] GetDataPaths()
