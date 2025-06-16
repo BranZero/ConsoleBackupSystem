@@ -74,9 +74,66 @@ public class DataFileManager
         {
             return false;
         }
-        //Continue working on
+
         DataPath old = dataPaths[index];
-        CopyMode newCopyMode = copyMode;
+        dataPaths[index] = new(old.Type, copyMode, old.SourcePath, old.IgnorePaths);
+
+        byte[] data = DPF.CreateFile(dataPaths);
+        WriteDataFile(data);
+        return true;
+    }
+
+    public static bool TryRemoveIgnorePaths(string sourcePath, string[] ignorePaths)
+    {
+        DataPath[] dataPaths = GetDataPaths();
+        int index = Array.FindIndex(dataPaths, dp => dp.SourcePath.Equals(sourcePath, StringComparison.Ordinal));
+        if (index == -1)
+        {
+            return false;
+        }
+
+        DataPath old = dataPaths[index];
+        if (old.IgnorePaths == null || old.IgnorePaths.Length < ignorePaths.Length)
+        {
+            return false;
+        }
+
+        HashSet<string> ignoreSet = [.. old.IgnorePaths];
+        foreach (string ignorePath in ignorePaths)
+        {
+            if (!ignoreSet.Remove(ignorePath))
+            {
+                return false; // The IgnorePath doesn't exist
+            }
+        }
+
+        dataPaths[index] = new(old.Type, old.FileCopyMode, old.SourcePath, [.. ignoreSet]);
+
+        byte[] data = DPF.CreateFile(dataPaths);
+        WriteDataFile(data);
+        return true;
+    }
+
+    public static bool TryAddIgnorePaths(string sourcePath, string[] ignorePaths)
+    {
+        DataPath[] dataPaths = GetDataPaths();
+        int index = Array.FindIndex(dataPaths, dp => dp.SourcePath.Equals(sourcePath, StringComparison.Ordinal));
+        if (index == -1)
+        {
+            return false;
+        }
+
+        DataPath old = dataPaths[index];
+        HashSet<string> ignoreSet = [.. old.IgnorePaths ?? []];
+        foreach (string ignorePath in ignorePaths)
+        {
+            if (!ignoreSet.Add(ignorePath))
+            {
+                return false; // The IgnorePath already exists
+            }
+        }
+
+        dataPaths[index] = new(old.Type, old.FileCopyMode, old.SourcePath, [.. ignoreSet]);
 
         byte[] data = DPF.CreateFile(dataPaths);
         WriteDataFile(data);
