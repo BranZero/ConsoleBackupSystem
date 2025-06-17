@@ -250,7 +250,7 @@ HELP_MESSAGE;
     /// <returns>result of command</returns>
     public static string UpdateCopyMode(string[] args)
     {
-        if (args.Length != 3)
+        if (args.Length != 3 && args.Length != 2)
         {
             return "Usage: updatec [-copyMode] <sourcePath>";
         }
