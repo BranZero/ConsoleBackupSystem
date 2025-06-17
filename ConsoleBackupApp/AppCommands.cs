@@ -295,6 +295,59 @@ HELP_MESSAGE;
         }
         return Result.Success.ToString();
     }
+    /// <summary>
+    /// Changes ignore paths based on updatei [a|d] <sourcePath> [ignorePaths...] 
+    /// </summary>
+    /// <param name="args"></param>
+    /// <returns>result of command</returns>
+    public static string UpdateIgnorePaths(string[] args)
+    {
+        if (args.Length < 4)
+        {
+            return "Usage: updatei [-option] <sourcePath> [ignorePaths...]";
+        }
+        int index = 1;
+        Result optResult = CheckOptions(args[index], out HashSet<char> options);
+        if (optResult == Result.Valid_Option)
+        {
+            index++;
+            if (options.Count != 1)
+            {
+                return "Usage: updatei accepts either a = Add or r = Remove";
+            }
+            // Placeholder logic for demonstration; replace with actual implementation as needed.
+            if (options.Remove('a'))
+            {
+                // Add ignore paths logic here
+                if (!DataFileManager.TryAddIgnorePaths(args[index], args[(index + 1)..]))
+                {
+                    return $"DataPath Not Found: {args[index]}";
+                }
+                return Result.Success.ToString();
+            }
+            else if (options.Remove('r'))
+            {
+                // Remove ignore paths logic here
+                if (!DataFileManager.TryRemoveIgnorePaths(args[index], args[(index + 1)..]))
+                {
+                    return $"DataPath Not Found: {args[index]}";
+                }
+                return Result.Success.ToString();
+            }
+            else
+            {
+                return "Usage: updatei accepts either a = Add or r = Remove";
+            }
+        }
+        else if (optResult == Result.No_Options)
+        {
+            return "Usage: updatei [-option] <sourcePath> [ignorePaths...]";
+        }
+        else
+        {
+            return optResult.ToString();
+        }
+    }
 }
 
 
