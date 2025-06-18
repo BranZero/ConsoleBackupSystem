@@ -193,6 +193,27 @@ public class AppCommandsUpdateTest
     }
 
     [Test]
+    public void UpdateIgnorePaths_Remove_DontExist_Failure()
+    {
+        // Arrange
+        string[] updateArgs = ["updatei", "-r", _testSubFolder, "left"];
+
+        // Act
+        string result = AppCommands.UpdateIgnorePaths(updateArgs);
+        DataPath[] dataPaths = DataFileManager.GetDataPaths();
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.EqualTo(Result.Success.ToString()));
+            Assert.That(dataPaths, Has.Length.EqualTo(2));
+            Assert.That(dataPaths[0].IgnorePaths, Is.Not.Null);
+            Assert.That(dataPaths[0].IgnorePaths, Has.Length.EqualTo(1));
+            Assert.That(dataPaths[0].IgnorePaths, Does.Contain(_ignorePath));
+        });
+    }
+
+    [Test]
     public void UpdateIgnorePaths_Add_InvalidPath_Failure()
     {
         // Arrange
