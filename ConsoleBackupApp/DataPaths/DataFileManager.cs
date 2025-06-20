@@ -37,7 +37,7 @@ public class DataFileManager
     /// </summary>
     /// <param name="s"></param>
     /// <returns></returns>
-    public static bool TryRemoveDataPath(string s)
+    public static Result TryRemoveDataPath(string s)
     {
         List<DataPath> dataPaths = [.. GetDataPaths()];
         for (int i = 0; i < dataPaths.Count; i++)
@@ -49,11 +49,11 @@ public class DataFileManager
                     dataPaths.RemoveAt(i);
                     byte[] data = DPF.CreateFile(dataPaths.ToArray());
                     WriteDataFile(data);
-                    return true;
+                    return new(ResultType.Success);
                 }
             }
         }
-        return false;
+        return new(ResultType.Not_Found);
     }
 
     public static DataPath[] GetDataPaths()

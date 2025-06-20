@@ -98,23 +98,20 @@ backup [-options] <destinationDirectory> [priorBackupDirectories...]
         if (args.Length < 2)
         { // Check if their are arguments passed in
             Console.WriteLine("Error: no arguments passed in.");
-            return Result.Too_Few_Arguments;
+            return new(ResultType.Too_Few_Arguments, "Usage: remove <path>");
         }
         else if (args.Length > 2)
         {
             Console.WriteLine("Error: too many arguments passed in.");
-            return Result.Too_Many_Arguments;
+            return new(ResultType.Too_Many_Arguments, "Usage: remove <path>");
         }
-        if (CheckOptions(args[index], out _) != Result.No_Options)
+        if (CheckOptions(args[index], out _) != ResultType.No_Options)
         {
-            return Result.Invalid_Option;
+            return new(ResultType.Invalid_Option, "Usage: remove <path>");;
         }
         //no options
-        if (DataFileManager.TryRemoveDataPath(args[1]))
-        {
-            return Result.Success;
-        }
-        return Result.Failure;
+        return DataFileManager.TryRemoveDataPath(args[1]);
+
     }
 
     public static Result Backup(string[] args)
