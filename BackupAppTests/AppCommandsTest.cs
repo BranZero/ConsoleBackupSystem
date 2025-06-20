@@ -56,7 +56,7 @@ public class AppCommandsAddAndRemoveTests
         var result = AppCommands.Add(args);
 
         // Assert
-        Assert.That(result, Is.EqualTo(Result.Too_Few_Arguments));
+        Assert.That(result.ResultType, Is.EqualTo(ResultType.Too_Few_Arguments));
     }
 
     [Test]
@@ -69,7 +69,7 @@ public class AppCommandsAddAndRemoveTests
         var result = AppCommands.Add(args);
 
         // Assert
-        Assert.That(result, Is.EqualTo(Result.Invalid_Path));
+        Assert.That(result.ResultType, Is.EqualTo(ResultType.Path_Invalid));
     }
 
     [Test]
@@ -86,7 +86,7 @@ public class AppCommandsAddAndRemoveTests
         FileInfo fileInfo = new FileInfo(DataFileManager.DATA_PATH_FILE);
 
         // Assert
-        Assert.That(result, Is.EqualTo(Result.Success));
+        Assert.That(result.ResultType, Is.EqualTo(ResultType.Success));
         Assert.That(fileInfo.Length, Is.EqualTo(expectedFileSize));
     }
 
@@ -103,7 +103,7 @@ public class AppCommandsAddAndRemoveTests
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.That(result, Is.EqualTo(Result.Success));
+            Assert.That(result.ResultType, Is.EqualTo(ResultType.Success));
             Assert.That(dataPaths, Has.Length.EqualTo(1));
             Assert.That(dataPaths[0].FileCopyMode, Is.EqualTo(CopyMode.ForceCopy));
             Assert.That(dataPaths[0].SourcePath, Is.EqualTo(_testFile));
@@ -123,7 +123,7 @@ public class AppCommandsAddAndRemoveTests
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.That(result, Is.EqualTo(Result.Invalid_Option));
+            Assert.That(result.ResultType, Is.EqualTo(ResultType.Invalid_Option));
             Assert.That(dataPaths, Has.Length.EqualTo(0));
         });
     }
@@ -142,7 +142,7 @@ public class AppCommandsAddAndRemoveTests
         FileInfo fileInfo = new(DataFileManager.DATA_PATH_FILE);
 
         // Assert
-        Assert.That(result, Is.EqualTo(Result.Success));
+        Assert.That(result.ResultType, Is.EqualTo(ResultType.Success));
         Assert.That(fileInfo.Length, Is.EqualTo(expectedFileSize));
     }
 
@@ -160,7 +160,7 @@ public class AppCommandsAddAndRemoveTests
         Assert.Multiple(() =>
         {
             // Assert
-            Assert.That(result, Is.EqualTo(Result.Success));
+            Assert.That(result.ResultType, Is.EqualTo(ResultType.Success));
             Assert.That(dataPaths, Has.Length.EqualTo(1));
             Assert.That(dataPaths[0].IgnorePaths, Has.Length.EqualTo(1));
             Assert.That(dataPaths[0].IgnorePaths[0], Is.Not.Null);
@@ -182,8 +182,8 @@ public class AppCommandsAddAndRemoveTests
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.That(result, Is.EqualTo(Result.Success));
-            Assert.That(result2, Is.EqualTo(Result.SubPath_Or_SamePath));
+            Assert.That(result.ResultType, Is.EqualTo(ResultType.Success));
+            Assert.That(result2.ResultType, Is.EqualTo(ResultType.SubPath_Or_SamePath));
         });
     }
 
@@ -201,8 +201,8 @@ public class AppCommandsAddAndRemoveTests
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.That(result, Is.EqualTo(Result.Success));
-            Assert.That(result2, Is.EqualTo(Result.SubPath_Or_SamePath));
+            Assert.That(result.ResultType, Is.EqualTo(ResultType.Success));
+            Assert.That(result2.ResultType, Is.EqualTo(ResultType.SubPath_Or_SamePath));
         });
     }
 
@@ -216,7 +216,7 @@ public class AppCommandsAddAndRemoveTests
         var result = AppCommands.Remove(args);
 
         // Assert
-        Assert.That(result, Is.EqualTo(Result.Too_Few_Arguments));
+        Assert.That(result.ResultType, Is.EqualTo(ResultType.Too_Few_Arguments));
     }
 
     [Test]
@@ -229,7 +229,7 @@ public class AppCommandsAddAndRemoveTests
         var result = AppCommands.Remove(args);
 
         // Assert
-        Assert.That(result, Is.EqualTo(Result.Too_Many_Arguments));
+        Assert.That(result.ResultType, Is.EqualTo(ResultType.Too_Many_Arguments));
     }
 
     [Test]
@@ -242,7 +242,7 @@ public class AppCommandsAddAndRemoveTests
         var result = AppCommands.Remove(args);
 
         // Assert
-        Assert.That(result, Is.EqualTo(Result.Invalid_Option));
+        Assert.That(result.ResultType, Is.EqualTo(ResultType.Invalid_Option));
     }
 
     [Test]
@@ -255,7 +255,7 @@ public class AppCommandsAddAndRemoveTests
         var result = AppCommands.Remove(args);
 
         // Assert
-        Assert.That(result, Is.EqualTo(Result.Failure));
+        Assert.That(result.ResultType, Is.EqualTo(ResultType.Not_Found));
     }
 
     [Test]
@@ -273,8 +273,8 @@ public class AppCommandsAddAndRemoveTests
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.That(result, Is.EqualTo(Result.Success));
-            Assert.That(result2, Is.EqualTo(Result.Success));
+            Assert.That(result.ResultType, Is.EqualTo(ResultType.Success));
+            Assert.That(result2.ResultType, Is.EqualTo(ResultType.Success));
             Assert.That(fileInfo.Length, Is.EqualTo(DPF.HEADER_SIZE));
         });
     }
@@ -294,8 +294,8 @@ public class AppCommandsAddAndRemoveTests
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.That(result, Is.EqualTo(Result.Success));
-            Assert.That(result2, Is.EqualTo(Result.Success));
+            Assert.That(result.ResultType, Is.EqualTo(ResultType.Success));
+            Assert.That(result2.ResultType, Is.EqualTo(ResultType.Success));
             Assert.That(fileInfo.Length, Is.EqualTo(DPF.HEADER_SIZE));
         });
     }
@@ -315,8 +315,8 @@ public class AppCommandsAddAndRemoveTests
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.That(result, Is.EqualTo(Result.Success));
-            Assert.That(result2, Is.EqualTo(Result.Failure));
+            Assert.That(result.ResultType, Is.EqualTo(ResultType.Success));
+            Assert.That(result2.ResultType, Is.EqualTo(ResultType.Not_Found));
             Assert.That(dataPaths, Has.Length.EqualTo(1));
         });
     }

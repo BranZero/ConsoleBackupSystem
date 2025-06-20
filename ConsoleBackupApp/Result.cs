@@ -24,6 +24,9 @@ public enum ResultType
     SubPath_Or_SamePath,
     Path_Invalid,
 
+    //DPF Results
+    Not_Found,
+
     //Argument Issues
     Too_Few_Arguments,
     Too_Many_Arguments,
