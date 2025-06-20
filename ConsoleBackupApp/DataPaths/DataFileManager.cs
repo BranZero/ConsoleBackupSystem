@@ -12,7 +12,7 @@ public class DataFileManager
     /// </summary>
     /// <param name="dataPath"></param>
     /// <returns>Does it already exist in data file</returns>
-    public static bool TryAddDataPath(DataPath dataPath)
+    public static Result TryAddDataPath(DataPath dataPath)
     {
         DataPath[] dataPaths = GetDataPaths();
         string sourcePath = dataPath.SourcePath;
@@ -22,7 +22,7 @@ public class DataFileManager
             string fullPath = item.SourcePath;
             if (fullPath.StartsWith(sourcePath) || sourcePath.StartsWith(fullPath))
             {
-                return false;
+                return new(ResultType.SubPath_Or_SamePath, $"The Path entered is part of or same as: {fullPath}");
             }
         }
         DataPath[] dataPathsNew = new DataPath[dataPaths.Length + 1];
@@ -30,7 +30,7 @@ public class DataFileManager
         dataPathsNew[dataPaths.Length] = dataPath;
         byte[] data = DPF.CreateFile(dataPathsNew);
         WriteDataFile(data);
-        return true;
+        return new(ResultType.Success);
     }
     /// <summary>
     /// Removes the first matching datapath from the list ignores Prior Paths

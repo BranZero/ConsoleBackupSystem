@@ -20,8 +20,9 @@ public enum ResultType
     Error,
 
     //Path Results
-    Not_Found,
+    Path_Not_Found,
     SubPath_Or_SamePath,
+    Path_Invalid,
 
     //Argument Issues
     Too_Few_Arguments,
