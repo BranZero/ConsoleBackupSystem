@@ -77,7 +77,7 @@ public class BackupCommandHelper
         return true;
     }
 
-    public static Result GetPriorBackupPaths(string backupDir, ReadOnlySpan<string> args, bool checkForBackupsInFolder, out List<PriorBackupPath> priorBackups)
+    public static ResultType GetPriorBackupPaths(string backupDir, ReadOnlySpan<string> args, bool checkForBackupsInFolder, out List<PriorBackupPath> priorBackups)
     {
         priorBackups = [];
         if (checkForBackupsInFolder)
@@ -89,10 +89,10 @@ public class BackupCommandHelper
         {
             if (!FindPriorBackupPathsByArgs(args, priorBackups))
             {
-                return Result.Invalid_Path;
+                return ResultType.Error;
             }
         }
-        return Result.Success;
+        return ResultType.Success;
     }
 
     //Collect DataPaths and StartBackup Process
@@ -103,7 +103,7 @@ public class BackupCommandHelper
         //exit if there are no dataPaths to be backedup.
         if (dataPaths.Count == 0)
         {
-            return Result.Empty;
+            return new(ResultType.Info, "No Paths found to be included in backup.");
         }
 
         string baseBackupFolder = FindBackupPathName(backupDir);
@@ -114,7 +114,7 @@ public class BackupCommandHelper
             if (backupDir.StartsWith(dataPath.SourcePath))
             {
                 Logger.Instance.Log(LogLevel.Error, $"The selected backup path is a sub path of a directory to be backedup {dataPath.SourcePath} in {backupDir}");
-                return Result.Invalid_Path;
+                return new(ResultType.Path_Invalid, $"Is a sub-path of a path to be backuped up.");
             }
         }
 
@@ -127,9 +127,9 @@ public class BackupCommandHelper
         {
 
             Logger.Instance.Log(LogLevel.Fatal, $"Something Happened while backing up the data to {baseBackupFolder}");
-            return Result.Error;
+            return new(ResultType.Error, "Fatal error occured while the backup process was occuring.");
         }
-        return Result.Success;
+        return new(ResultType.Success);
     }
     /// <summary>
     /// All DataPath are validated as either a file or directory if that can be located

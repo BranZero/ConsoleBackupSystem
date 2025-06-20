@@ -75,7 +75,7 @@ public class BackupCommandTest
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.That(result, Is.EqualTo(Result.Success));
+            Assert.That(result.ResultType, Is.EqualTo(ResultType.Success));
             Assert.That(Directory.Exists(folder), Is.True);
             Assert.That(File.Exists(zipPath));
 
@@ -100,7 +100,7 @@ public class BackupCommandTest
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.That(result, Is.EqualTo(Result.Empty));
+            Assert.That(result.ResultType, Is.EqualTo(ResultType.Info));
             Assert.That(Directory.Exists(folder), Is.False);
             Assert.That(File.Exists(zipPath), Is.False);
         });
@@ -130,7 +130,7 @@ public class BackupCommandTest
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.That(result, Is.EqualTo(Result.Success));
+            Assert.That(result.ResultType, Is.EqualTo(ResultType.Success));
             Assert.That(Directory.Exists(folder), Is.True);
             Assert.That(File.Exists(zipPath));
 
@@ -175,11 +175,11 @@ public class BackupCommandTest
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.That(result, Is.EqualTo(Result.Success));
+            Assert.That(result.ResultType, Is.EqualTo(ResultType.Success));
             Assert.That(Directory.Exists(folder), Is.True);
             Assert.That(File.Exists(zipPath));
 
-            Assert.That(result2, Is.EqualTo(Result.Success));
+            Assert.That(result2.ResultType, Is.EqualTo(ResultType.Success));
             Assert.That(Directory.Exists(folder2), Is.True);
             Assert.That(File.Exists(zipPath2));
             Assert.That(zipArchive.Entries, Has.Count.EqualTo(0)); //Prior Backups is yet to be implemented
@@ -221,11 +221,11 @@ public class BackupCommandTest
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.That(result, Is.EqualTo(Result.Success));
+            Assert.That(result.ResultType, Is.EqualTo(ResultType.Success));
             Assert.That(Directory.Exists(folder), Is.True);
             Assert.That(File.Exists(zipPath));
 
-            Assert.That(result2, Is.EqualTo(Result.Success));
+            Assert.That(result2.ResultType, Is.EqualTo(ResultType.Success));
             Assert.That(Directory.Exists(folder2), Is.True);
             Assert.That(File.Exists(zipPath2));
             Assert.That(zipArchive.Entries, Has.Count.EqualTo(1)); //Prior Backups is yet to be implemented
@@ -257,7 +257,7 @@ public class BackupCommandTest
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.That(result, Is.EqualTo(Result.Success));
+            Assert.That(result.ResultType, Is.EqualTo(ResultType.Success));
             Assert.That(Directory.Exists(folder), Is.True);
             Assert.That(File.Exists(zipPath));
 
@@ -281,8 +281,8 @@ public class BackupCommandTest
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.That(addResult, Is.EqualTo(Result.Success));
-            Assert.That(backupResult, Is.EqualTo(Result.Success));
+            Assert.That(addResult.ResultType, Is.EqualTo(ResultType.Success));
+            Assert.That(backupResult.ResultType, Is.EqualTo(ResultType.Success));
         });
     }
 }

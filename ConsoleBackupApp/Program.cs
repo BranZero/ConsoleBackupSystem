@@ -98,15 +98,15 @@ public class Program
                 Exit(args);
                 return "Closing";
             case "add":
-                return AppCommands.Add(args).ToString();
+                return AppCommands.Add(args).GetMessage();
             case "remove":
-                return AppCommands.Remove(args).ToString();
+                return AppCommands.Remove(args).GetMessage();
             case "help":
-                return AppCommands.Help(args).ToString();
+                return AppCommands.Help(args);
             case "version":
                 return AppCommands.Version(args);
             case "backup":
-                return AppCommands.Backup(args).ToString();
+                return AppCommands.Backup(args).GetMessage();
             case "list":
                 AppCommands.List(args);
                 return "";

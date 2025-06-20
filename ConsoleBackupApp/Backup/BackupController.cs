@@ -63,11 +63,11 @@ public class BackupController
 
         if (_backupShared.DataPathsIsEmpty())
         {
-            return Result.Empty;
+            return new(ResultType.Info, "No Paths found to be included in backup.");
         }
         if (!SetupBackupDirectory(_folderPath))
         {
-            return Result.Error;
+            return new(ResultType.Error, $"Setting up the folder: {_folderPath}");
         }
 
         CancellationTokenSource cancellationToken = new();
@@ -108,7 +108,7 @@ public class BackupController
             GetBackupStats(startTime);
         }
 
-        return Result.Success;
+        return new(ResultType.Success);
     }
 
     //Log Time Taken And BackupStats
