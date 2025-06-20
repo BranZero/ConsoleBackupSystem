@@ -31,18 +31,17 @@ backup [-options] <destinationDirectory> [priorBackupDirectories...]
         int index = 1;
         if (args.Length < 2)
         { // Check if their are arguments passed in
-            Console.WriteLine("Error: no arguments passed in.");
-            return Result.Too_Few_Arguments;
+            return new(ResultType.Too_Few_Arguments, "Usage: add [-options] <path> [Files/Directories Names To Ignore...]");
         }
 
         PathType pathType = PathType.Unknown;
         CopyMode copyMode = CopyMode.None;
-        Result optResult = CheckOptions(args[index], out HashSet<char> options);
-        if (optResult == Result.Duplicate_Option)
+        ResultType optResult = CheckOptions(args[index], out HashSet<char> options);
+        if (optResult == ResultType.Duplicate_Option)
         {
-            return optResult;
+            return new(optResult);
         }
-        else if (optResult == Result.Valid_Option)
+        else if (optResult == ResultType.Valid_Option)
         {
             index++;
         }
@@ -75,21 +74,19 @@ backup [-options] <destinationDirectory> [priorBackupDirectories...]
             }
             else
             {
-                return Result.Invalid_Path;
+                return new(ResultType.Path_Not_Found, "Add -f option to override this if this is the correct path");
             }
         }
 
         if (options.Count > 0)
         {
-            return Result.Invalid_Option;
+            return new(ResultType.Invalid_Option);
         }
 
-        ReadOnlySpan<string> argsLeft = new ReadOnlySpan<string>(args, index, args.Length - index);
-        if (!DataPath.Init(pathType, copyMode, argsLeft, out DataPath dataPath)) return Result.Invalid_Path;
+        ReadOnlySpan<string> argsLeft = new(args, index, args.Length - index);
+        if (!DataPath.Init(pathType, copyMode, argsLeft, out DataPath dataPath)) return new(ResultType.Path_Invalid);
 
-        if (!DataFileManager.TryAddDataPath(dataPath)) return Result.SubPath_Or_SamePath;
-
-        return Result.Success;
+        return DataFileManager.TryAddDataPath(dataPath);
     }
 
     public static Result Remove(string[] args)
