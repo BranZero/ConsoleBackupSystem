@@ -69,7 +69,7 @@ public class AppCommandsAddAndRemoveTests
         var result = AppCommands.Add(args);
 
         // Assert
-        Assert.That(result.ResultType, Is.EqualTo(ResultType.Path_Invalid));
+        Assert.That(result.ResultType, Is.EqualTo(ResultType.Path_Not_Found));
     }
 
     [Test]
