@@ -71,7 +71,7 @@ public class AppCommandsUpdateTest
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.That(result, Is.EqualTo(Result.Success.ToString()));
+            Assert.That(result.ResultType, Is.EqualTo(ResultType.Success));
             Assert.That(dataPaths, Has.Length.EqualTo(2));
             Assert.That(dataPaths[0].FileCopyMode, Is.EqualTo(CopyMode.ForceCopy));
         });
@@ -90,7 +90,7 @@ public class AppCommandsUpdateTest
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.That(result, Is.EqualTo(Result.Success.ToString()));
+            Assert.That(result.ResultType, Is.EqualTo(ResultType.Success));
             Assert.That(dataPaths, Has.Length.EqualTo(2));
             Assert.That(dataPaths[0].FileCopyMode, Is.EqualTo(CopyMode.AllOrNone));
         });
@@ -110,7 +110,7 @@ public class AppCommandsUpdateTest
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.That(result, Is.EqualTo(Result.Success.ToString()));
+            Assert.That(result.ResultType, Is.EqualTo(ResultType.Success));
             Assert.That(dataPaths, Has.Length.EqualTo(2));
             Assert.That(dataPaths[0].FileCopyMode, Is.EqualTo(CopyMode.None));
         });
@@ -139,7 +139,7 @@ public class AppCommandsUpdateTest
         var result = AppCommands.UpdateCopyMode(updateArgs);
 
         // Assert
-        Assert.That(result, Is.EqualTo("Usage: updatec accepts either a = AllOrNone or c = ForceCopy or no option for default mode"));
+        Assert.That(result.GetMessage(), Is.EqualTo("Usage: updatec accepts either a = AllOrNone or c = ForceCopy or no option for default mode"));
     }
 
     //Ignore Paths tests
@@ -156,7 +156,7 @@ public class AppCommandsUpdateTest
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.That(result, Is.EqualTo(Result.Success.ToString()));
+            Assert.That(result.ResultType, Is.EqualTo(ResultType.Success));
             Assert.That(dataPaths, Has.Length.EqualTo(2));
             Assert.That(dataPaths[0].IgnorePaths, Is.Not.Null);
             Assert.That(dataPaths[0].IgnorePaths, Has.Length.EqualTo(3));
@@ -172,13 +172,13 @@ public class AppCommandsUpdateTest
         string[] updateArgs = ["updatei", "-r", _testSubFolder, _ignorePath];
 
         // Act
-        string result = AppCommands.UpdateIgnorePaths(updateArgs);
+        Result result = AppCommands.UpdateIgnorePaths(updateArgs);
         DataPath[] dataPaths = DataFileManager.GetDataPaths();
 
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.That(result, Is.EqualTo(Result.Success.ToString()));
+            Assert.That(result.ResultType, Is.EqualTo(ResultType.Success));
             Assert.That(dataPaths, Has.Length.EqualTo(2));
             if (dataPaths[0].IgnorePaths != null) // both are acceptable results
             {
@@ -199,13 +199,13 @@ public class AppCommandsUpdateTest
         string[] updateArgs = ["updatei", "-r", _testSubFolder, "left"];
 
         // Act
-        string result = AppCommands.UpdateIgnorePaths(updateArgs);
+        Result result = AppCommands.UpdateIgnorePaths(updateArgs);
         DataPath[] dataPaths = DataFileManager.GetDataPaths();
 
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.That(result, Is.EqualTo(Result.Success.ToString()));
+            Assert.That(result.ResultType, Is.EqualTo(ResultType.Not_Found));
             Assert.That(dataPaths, Has.Length.EqualTo(2));
             Assert.That(dataPaths[0].IgnorePaths, Is.Not.Null);
             Assert.That(dataPaths[0].IgnorePaths, Has.Length.EqualTo(1));
