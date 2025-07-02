@@ -43,8 +43,10 @@ public class DataFileManager
         for (int i = 0; i < dataPaths.Count; i++)
         {
             string sourcePath = dataPaths[i].SourcePath;
-            if(sourcePath.Length == s.Length || sourcePath.Length == s.Length+1){
-                if(s[0] == dataPaths[i].Drive && sourcePath.StartsWith(s)){
+            if (sourcePath.Length == s.Length || sourcePath.Length == s.Length + 1)
+            {
+                if (s[0] == dataPaths[i].Drive && sourcePath.StartsWith(s))
+                {
                     //Found
                     dataPaths.RemoveAt(i);
                     byte[] data = DPF.CreateFile(dataPaths.ToArray());
@@ -54,6 +56,88 @@ public class DataFileManager
             }
         }
         return new(ResultType.Not_Found);
+    }
+    /// <summary>
+    /// Updates an existing DataPath by sourcePath. Allows changing CopyMode and IgnorePaths.
+    /// </summary>
+    /// <param name="sourcePath">The source path to update</param>
+    /// <param name="copyMode">Optional new CopyMode</param>
+    /// <param name="ignorePaths">Optional new ignore paths</param>
+    /// <returns>True if updated, false if not found</returns>
+    public static bool TryUpdateDataPathCopyMode(string sourcePath, CopyMode copyMode)
+    {
+        DataPath[] dataPaths = GetDataPaths();
+        int index = Array.FindIndex(dataPaths, dp => (
+            dp.SourcePath.Equals(sourcePath, StringComparison.Ordinal)
+        ));
+        if (index == -1)
+        {
+            return false;
+        }
+
+        DataPath old = dataPaths[index];
+        dataPaths[index] = new(old.Type, copyMode, old.SourcePath, old.IgnorePaths);
+
+        byte[] data = DPF.CreateFile(dataPaths);
+        WriteDataFile(data);
+        return true;
+    }
+
+    public static bool TryRemoveIgnorePaths(string sourcePath, string[] ignorePaths)
+    {
+        DataPath[] dataPaths = GetDataPaths();
+        int index = Array.FindIndex(dataPaths, dp => dp.SourcePath.Equals(sourcePath, StringComparison.Ordinal));
+        if (index == -1)
+        {
+            return false;
+        }
+
+        DataPath old = dataPaths[index];
+        if (old.IgnorePaths == null || old.IgnorePaths.Length < ignorePaths.Length)
+        {
+            return false;
+        }
+
+        HashSet<string> ignoreSet = [.. old.IgnorePaths];
+        foreach (string ignorePath in ignorePaths)
+        {
+            if (!ignoreSet.Remove(ignorePath))
+            {
+                return false; // The IgnorePath doesn't exist
+            }
+        }
+
+        dataPaths[index] = new(old.Type, old.FileCopyMode, old.SourcePath, [.. ignoreSet]);
+
+        byte[] data = DPF.CreateFile(dataPaths);
+        WriteDataFile(data);
+        return true;
+    }
+
+    public static bool TryAddIgnorePaths(string sourcePath, string[] ignorePaths)
+    {
+        DataPath[] dataPaths = GetDataPaths();
+        int index = Array.FindIndex(dataPaths, dp => dp.SourcePath.Equals(sourcePath, StringComparison.Ordinal));
+        if (index == -1)
+        {
+            return false;
+        }
+
+        DataPath old = dataPaths[index];
+        HashSet<string> ignoreSet = [.. old.IgnorePaths ?? []];
+        foreach (string ignorePath in ignorePaths)
+        {
+            if (!ignoreSet.Add(ignorePath))
+            {
+                return false; // The IgnorePath already exists
+            }
+        }
+
+        dataPaths[index] = new(old.Type, old.FileCopyMode, old.SourcePath, [.. ignoreSet]);
+
+        byte[] data = DPF.CreateFile(dataPaths);
+        WriteDataFile(data);
+        return true;
     }
 
     public static DataPath[] GetDataPaths()
