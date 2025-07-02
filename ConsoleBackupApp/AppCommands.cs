@@ -34,18 +34,17 @@ backup [-options] <destinationDirectory> [priorBackupDirectories...]
         int index = 1;
         if (args.Length < 2)
         { // Check if their are arguments passed in
-            Console.WriteLine("Error: no arguments passed in.");
-            return Result.Too_Few_Arguments;
+            return new(ResultType.Too_Few_Arguments, "Usage: add [-options] <path> [Files/Directories Names To Ignore...]");
         }
 
         PathType pathType = PathType.Unknown;
         CopyMode copyMode = CopyMode.None;
-        Result optResult = CheckOptions(args[index], out HashSet<char> options);
-        if (optResult == Result.Duplicate_Option)
+        ResultType optResult = CheckOptions(args[index], out HashSet<char> options);
+        if (optResult == ResultType.Duplicate_Option)
         {
-            return optResult;
+            return new(optResult);
         }
-        else if (optResult == Result.Valid_Option)
+        else if (optResult == ResultType.Valid_Option)
         {
             index++;
         }
@@ -78,21 +77,19 @@ backup [-options] <destinationDirectory> [priorBackupDirectories...]
             }
             else
             {
-                return Result.Invalid_Path;
+                return new(ResultType.Path_Not_Found, "Add -f option to override this if this is the correct path");
             }
         }
 
         if (options.Count > 0)
         {
-            return Result.Invalid_Option;
+            return new(ResultType.Invalid_Option);
         }
 
-        ReadOnlySpan<string> argsLeft = new ReadOnlySpan<string>(args, index, args.Length - index);
-        if (!DataPath.Init(pathType, copyMode, argsLeft, out DataPath dataPath)) return Result.Invalid_Path;
+        ReadOnlySpan<string> argsLeft = new(args, index, args.Length - index);
+        if (!DataPath.Init(pathType, copyMode, argsLeft, out DataPath dataPath)) return new(ResultType.Path_Invalid);
 
-        if (!DataFileManager.TryAddDataPath(dataPath)) return Result.SubPath_Or_SamePath;
-
-        return Result.Success;
+        return DataFileManager.TryAddDataPath(dataPath);
     }
 
     public static Result Remove(string[] args)
@@ -101,23 +98,20 @@ backup [-options] <destinationDirectory> [priorBackupDirectories...]
         if (args.Length < 2)
         { // Check if their are arguments passed in
             Console.WriteLine("Error: no arguments passed in.");
-            return Result.Too_Few_Arguments;
+            return new(ResultType.Too_Few_Arguments, "Usage: remove <path>");
         }
         else if (args.Length > 2)
         {
             Console.WriteLine("Error: too many arguments passed in.");
-            return Result.Too_Many_Arguments;
+            return new(ResultType.Too_Many_Arguments, "Usage: remove <path>");
         }
-        if (CheckOptions(args[index], out _) != Result.No_Options)
+        if (CheckOptions(args[index], out _) != ResultType.No_Options)
         {
-            return Result.Invalid_Option;
+            return new(ResultType.Invalid_Option, "Usage: remove <path>");;
         }
         //no options
-        if (DataFileManager.TryRemoveDataPath(args[1]))
-        {
-            return Result.Success;
-        }
-        return Result.Failure;
+        return DataFileManager.TryRemoveDataPath(args[1]);
+
     }
 
     public static Result Backup(string[] args)
@@ -125,26 +119,26 @@ backup [-options] <destinationDirectory> [priorBackupDirectories...]
         int index = 1;
         if (args.Length < 2)
         { // Check if their are arguments passed in
-            return Result.Too_Few_Arguments;
+            return new(ResultType.Too_Few_Arguments, "Usage: backup [-options] <destinationDirectory> [priorBackupDirectories...]");
         }
 
         //Select Options
         bool checkSecondaryPriorBackups = false;
         bool checkForBackupsInFolder = false;
-        Result optResult = CheckOptions(args[index], out HashSet<char> options);
-        if (optResult == Result.Valid_Option)
+        ResultType optResult = CheckOptions(args[index], out HashSet<char> options);
+        if (optResult == ResultType.Valid_Option)
         {
             index++;
             checkSecondaryPriorBackups = options.Remove('n');
             checkForBackupsInFolder = options.Remove('c');
             if (options.Count > 0)
             {
-                return Result.Invalid_Option;
+                return new(ResultType.Invalid_Option);
             }
         }
-        else if (optResult != Result.No_Options)
+        else if (optResult != ResultType.No_Options)
         {
-            return optResult;
+            return new(optResult);
         }
 
         //Valid Destination Directory of Backup
@@ -158,24 +152,23 @@ backup [-options] <destinationDirectory> [priorBackupDirectories...]
         }
         else
         {
-            return Result.Invalid_Path;
+            return new(ResultType.Path_Not_Found);
         }
 
         //Check Prior Backup Directories
-        List<PriorBackupPath> priorBackups;
         ReadOnlySpan<string> argsLeft = [];
         if (checkSecondaryPriorBackups)
         {
             if (args.Length <= index)
             {
-                return Result.Too_Few_Arguments;
+                return new(ResultType.Too_Few_Arguments, "Expected additional arguments for secondary prior backup locations.");
             }
             argsLeft = new ReadOnlySpan<string>(args, index, args.Length - index);
         }
-        Result result = BackupCommandHelper.GetPriorBackupPaths(backupDir, argsLeft, checkForBackupsInFolder, out priorBackups);
-        if (result != Result.Success)
+        ResultType result = BackupCommandHelper.GetPriorBackupPaths(backupDir, argsLeft, checkForBackupsInFolder, out List<PriorBackupPath> priorBackups);
+        if (result != ResultType.Success)
         {
-            return result;
+            return new(result, "Problem occured getting prior backup paths (check logs for error message).");
         }
 
         return BackupCommandHelper.BackupData(backupDir, priorBackups);//if priorBackups is empty don't check prior backups
@@ -185,7 +178,7 @@ backup [-options] <destinationDirectory> [priorBackupDirectories...]
     {
         if (args.Length > 1)
         {
-            return Result.Too_Many_Arguments.ToString();
+            return ResultType.Too_Many_Arguments.ToString();
         }
         return
 HELP_MESSAGE;
@@ -226,21 +219,21 @@ HELP_MESSAGE;
     }
 
 
-    public static Result CheckOptions(string input, out HashSet<char> options)
+    public static ResultType CheckOptions(string input, out HashSet<char> options)
     {
         options = new HashSet<char>();
-        if (string.IsNullOrEmpty(input)) return Result.No_Options;
-        if (input.Length < 2) return Result.No_Options;
-        if (input[0] != '-') return Result.No_Options;
+        if (string.IsNullOrEmpty(input)) return ResultType.No_Options;
+        if (input.Length < 2) return ResultType.No_Options;
+        if (input[0] != '-') return ResultType.No_Options;
 
         for (int i = 1; i < input.Length; i++) // Start from the second character
         {
             if (!options.Add(input[i]))
             {
-                return Result.Duplicate_Option;
+                return ResultType.Duplicate_Option;
             }
         }
-        return Result.Valid_Option;
+        return ResultType.Valid_Option;
     }
 
     /// <summary>
@@ -351,22 +344,3 @@ HELP_MESSAGE;
 }
 
 
-public enum Result
-{
-    Success,
-    Empty,
-    Failure,
-    Error,
-    SubPath_Or_SamePath,
-    Invalid_Path,
-
-    //Argument Issues
-    Too_Few_Arguments,
-    Too_Many_Arguments,
-
-    //Options
-    Invalid_Option,
-    Duplicate_Option,
-    Valid_Option,
-    No_Options,
-}
