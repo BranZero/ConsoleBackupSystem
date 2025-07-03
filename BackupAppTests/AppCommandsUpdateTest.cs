@@ -126,7 +126,7 @@ public class AppCommandsUpdateTest
         var result = AppCommands.UpdateCopyMode(updateArgs);
 
         // Assert
-        Assert.That(result, Does.Contain("DataPath Not Found"));
+        Assert.That(result.ResultType, Is.EqualTo(ResultType.Not_Found));
     }
 
     [Test]
@@ -139,7 +139,7 @@ public class AppCommandsUpdateTest
         var result = AppCommands.UpdateCopyMode(updateArgs);
 
         // Assert
-        Assert.That(result.GetMessage(), Is.EqualTo("Usage: updatec accepts either a = AllOrNone or c = ForceCopy or no option for default mode"));
+        Assert.That(result.ResultType, Is.EqualTo(ResultType.Invalid_Option));
     }
 
     //Ignore Paths tests
@@ -213,6 +213,27 @@ public class AppCommandsUpdateTest
         });
     }
 
+        [Test]
+    public void UpdateIgnorePaths_Add_Exist_Failure()
+    {
+        // Arrange
+        string[] updateArgs = ["updatei", "-a", _testSubFolder, _ignorePath];
+
+        // Act
+        Result result = AppCommands.UpdateIgnorePaths(updateArgs);
+        DataPath[] dataPaths = DataFileManager.GetDataPaths();
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.ResultType, Is.EqualTo(ResultType.Exists));
+            Assert.That(dataPaths, Has.Length.EqualTo(2));
+            Assert.That(dataPaths[0].IgnorePaths, Is.Not.Null);
+            Assert.That(dataPaths[0].IgnorePaths, Has.Length.EqualTo(1));
+            Assert.That(dataPaths[0].IgnorePaths, Does.Contain(_ignorePath));
+        });
+    }
+
     [Test]
     public void UpdateIgnorePaths_Add_InvalidPath_Failure()
     {
@@ -223,6 +244,6 @@ public class AppCommandsUpdateTest
         var result = AppCommands.UpdateIgnorePaths(updateArgs);
 
         // Assert
-        Assert.That(result, Does.Contain("not found").IgnoreCase);
+        Assert.That(result.ResultType, Is.EqualTo(ResultType.Not_Found));
     }
 }
