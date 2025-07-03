@@ -41,6 +41,22 @@ add [-options] <path> [Files/DirectoriesNames...]
 remove <path>
 ```
 
+### Update Existing Path
+#### Change Copy Mode
+```bash
+updatec [-c | -a] <sourcePath>
+```
+- `-c`: Set copy mode to `ForceCopy`.
+- `-a`: Set copy mode to `AllOrNone`.
+- No option: Sets copy mode to `None` (default).
+
+#### Change IgnorePaths
+```bash
+updatei [-a | -d] <sourcePath> [ignorePaths...] 
+```
+- `-a`: Add new `ignorePaths`.
+- `-d`: Remove existing `ignorePaths`.
+
 ### List all paths currently configured for backup
 ```bash 
 list
