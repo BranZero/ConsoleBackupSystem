@@ -23,6 +23,7 @@ public enum ResultType
     Path_Not_Found,
     SubPath_Or_SamePath,
     Path_Invalid,
+    Exists,
 
     //DPF Results
     Not_Found,

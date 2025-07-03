@@ -241,104 +241,100 @@ HELP_MESSAGE;
     /// </summary>
     /// <param name="args"></param>
     /// <returns>result of command</returns>
-    public static string UpdateCopyMode(string[] args)
+    public static Result UpdateCopyMode(string[] args)
     {
-        if (args.Length != 3 && args.Length != 2)
+        if (args.Length < 2)
         {
-            return "Usage: updatec [-copyMode] <sourcePath>";
+            return new(ResultType.Too_Few_Arguments, "Usage: updatec [-copyMode] <sourcePath>");
+        }
+        else if (args.Length > 3)
+        {
+            return new(ResultType.Too_Many_Arguments, "Usage: updatec [-copyMode] <sourcePath>");
         }
         int index = 1;
-        Result optResult = CheckOptions(args[index], out HashSet<char> options);
-        if (optResult == Result.Valid_Option)
+        var optResult = CheckOptions(args[index], out HashSet<char> options);
+        if (optResult == ResultType.Valid_Option)
         {
             index++;
             if (options.Count != 1)
             {
-                return "Usage: updatec accepts either a = AllOrNone or c = ForceCopy or no option for default mode";
+                return new(ResultType.Invalid_Option, "Usage: updatec accepts either a = AllOrNone or c = ForceCopy or no option for default mode");
             }
             if (options.Remove(FORCE_COPY))
             {
                 if (!DataFileManager.TryUpdateDataPathCopyMode(args[index], CopyMode.ForceCopy))
                 {
-                    return $"DataPath Not Found: {args[index]}";
+                    return new(ResultType.Not_Found, $"DataPath Not Found: {args[index]}");
                 }
             }
             else if (options.Remove(ALL_OR_NONE))
             {
                 if (!DataFileManager.TryUpdateDataPathCopyMode(args[index], CopyMode.AllOrNone))
                 {
-                    return $"DataPath Not Found: {args[index]}";
+                    return new(ResultType.Not_Found, $"DataPath Not Found: {args[index]}");
                 }
             }
             else
             {
-                return "Usage: updatec accepts either a = AllOrNone or c = ForceCopy or no option for default mode";
+                return new(ResultType.Invalid_Option, "Usage: updatec accepts either a = AllOrNone or c = ForceCopy or no option for default mode");
             }
         }
-        else if (optResult == Result.No_Options)
+        else if (optResult == ResultType.No_Options)
         { // Default mode
             if (!DataFileManager.TryUpdateDataPathCopyMode(args[index], CopyMode.None))
             {
-                return $"DataPath Not Found: {args[index]}";
+                return new(optResult, $"DataPath Not Found: {args[index]}");
             }
         }
         else
         {
-            return optResult.ToString();
+            return new(optResult, "Usage: updatec [-copyMode] <sourcePath>");
         }
-        return Result.Success.ToString();
+        return new(ResultType.Success);
     }
     /// <summary>
     /// Changes ignore paths based on updatei [a|d] <sourcePath> [ignorePaths...] 
     /// </summary>
     /// <param name="args"></param>
     /// <returns>result of command</returns>
-    public static string UpdateIgnorePaths(string[] args)
+    public static Result UpdateIgnorePaths(string[] args)
     {
         if (args.Length < 4)
         {
-            return "Usage: updatei [-option] <sourcePath> [ignorePaths...]";
+            return new(ResultType.Too_Few_Arguments, "Usage: updatei [-option] <sourcePath> [ignorePaths...]");
         }
         int index = 1;
-        Result optResult = CheckOptions(args[index], out HashSet<char> options);
-        if (optResult == Result.Valid_Option)
+        var optResult = CheckOptions(args[index], out HashSet<char> options);
+        if (optResult == ResultType.Valid_Option)
         {
             index++;
-            if (options.Count != 1)
+            if (options.Count > 1)
             {
-                return "Usage: updatei accepts either a = Add or r = Remove";
+                return new(ResultType.Invalid_Option, "Usage: updatei accepts either a = Add or r = Remove");
             }
-            // Placeholder logic for demonstration; replace with actual implementation as needed.
+
             if (options.Remove('a'))
             {
                 // Add ignore paths logic here
-                if (!DataFileManager.TryAddIgnorePaths(args[index], args[(index + 1)..]))
-                {
-                    return $"DataPath Not Found: {args[index]}";
-                }
-                return Result.Success.ToString();
+                var result = DataFileManager.TryAddIgnorePaths(args[index], args[(index + 1)..]);
+                return new(result, result != ResultType.Success ? $"DataPath Not Found: {args[index]}" : "");
+
+
             }
             else if (options.Remove('r'))
             {
                 // Remove ignore paths logic here
-                if (!DataFileManager.TryRemoveIgnorePaths(args[index], args[(index + 1)..]))
-                {
-                    return $"DataPath Not Found: {args[index]}";
-                }
-                return Result.Success.ToString();
+                var result = DataFileManager.TryRemoveIgnorePaths(args[index], args[(index + 1)..]);
+                return new(result, result != ResultType.Success ? $"DataPath Not Found: {args[index]}" : "");
             }
             else
             {
-                return "Usage: updatei accepts either a = Add or r = Remove";
+                return new(ResultType.Invalid_Option, "Usage: updatei accepts either a = Add or r = Remove");
             }
-        }
-        else if (optResult == Result.No_Options)
-        {
-            return "Usage: updatei [-option] <sourcePath> [ignorePaths...]";
         }
         else
         {
-            return optResult.ToString();
+            return new(optResult, "Usage: updatei [-option] <sourcePath> [ignorePaths...]");
         }
     }
 }

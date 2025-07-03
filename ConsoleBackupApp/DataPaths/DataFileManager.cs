@@ -83,19 +83,19 @@ public class DataFileManager
         return true;
     }
 
-    public static bool TryRemoveIgnorePaths(string sourcePath, string[] ignorePaths)
+    public static ResultType TryRemoveIgnorePaths(string sourcePath, string[] ignorePaths)
     {
         DataPath[] dataPaths = GetDataPaths();
         int index = Array.FindIndex(dataPaths, dp => dp.SourcePath.Equals(sourcePath, StringComparison.Ordinal));
         if (index == -1)
         {
-            return false;
+            return ResultType.Path_Not_Found;
         }
 
         DataPath old = dataPaths[index];
         if (old.IgnorePaths == null || old.IgnorePaths.Length < ignorePaths.Length)
         {
-            return false;
+            return ResultType.Not_Found;
         }
 
         HashSet<string> ignoreSet = [.. old.IgnorePaths];
@@ -103,7 +103,7 @@ public class DataFileManager
         {
             if (!ignoreSet.Remove(ignorePath))
             {
-                return false; // The IgnorePath doesn't exist
+                return ResultType.Not_Found; // The IgnorePath doesn't exist
             }
         }
 
@@ -111,16 +111,16 @@ public class DataFileManager
 
         byte[] data = DPF.CreateFile(dataPaths);
         WriteDataFile(data);
-        return true;
+        return ResultType.Success;
     }
 
-    public static bool TryAddIgnorePaths(string sourcePath, string[] ignorePaths)
+    public static ResultType TryAddIgnorePaths(string sourcePath, string[] ignorePaths)
     {
         DataPath[] dataPaths = GetDataPaths();
         int index = Array.FindIndex(dataPaths, dp => dp.SourcePath.Equals(sourcePath, StringComparison.Ordinal));
         if (index == -1)
         {
-            return false;
+            return ResultType.Not_Found;
         }
 
         DataPath old = dataPaths[index];
@@ -129,7 +129,7 @@ public class DataFileManager
         {
             if (!ignoreSet.Add(ignorePath))
             {
-                return false; // The IgnorePath already exists
+                return ResultType.Exists; // The IgnorePath already exists
             }
         }
 
@@ -137,7 +137,7 @@ public class DataFileManager
 
         byte[] data = DPF.CreateFile(dataPaths);
         WriteDataFile(data);
-        return true;
+        return ResultType.Success;
     }
 
     public static DataPath[] GetDataPaths()
