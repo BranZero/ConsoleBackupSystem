@@ -193,7 +193,7 @@ public class AppCommandsUpdateTest
     }
 
     [Test]
-    public void UpdateIgnorePaths_Remove_DontExist_Failure()
+    public void UpdateIgnorePaths_Remove_DontExist_NoChange()
     {
         // Arrange
         string[] updateArgs = ["updatei", "-r", _testSubFolder, "left"];
@@ -205,7 +205,8 @@ public class AppCommandsUpdateTest
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.That(result.ResultType, Is.EqualTo(ResultType.Not_Found));
+            Assert.That(result.ResultType, Is.EqualTo(ResultType.No_Change));
+            Assert.That(result.Message, Is.Not.Null);
             Assert.That(dataPaths, Has.Length.EqualTo(2));
             Assert.That(dataPaths[0].IgnorePaths, Is.Not.Null);
             Assert.That(dataPaths[0].IgnorePaths, Has.Length.EqualTo(1));
@@ -214,7 +215,7 @@ public class AppCommandsUpdateTest
     }
 
         [Test]
-    public void UpdateIgnorePaths_Add_Exist_Failure()
+    public void UpdateIgnorePaths_Add_Exist_NoChange()
     {
         // Arrange
         string[] updateArgs = ["updatei", "-a", _testSubFolder, _ignorePath];
@@ -226,7 +227,8 @@ public class AppCommandsUpdateTest
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.That(result.ResultType, Is.EqualTo(ResultType.Exists));
+            Assert.That(result.ResultType, Is.EqualTo(ResultType.No_Change));
+            Assert.That(result.Message, Is.Not.Null);
             Assert.That(dataPaths, Has.Length.EqualTo(2));
             Assert.That(dataPaths[0].IgnorePaths, Is.Not.Null);
             Assert.That(dataPaths[0].IgnorePaths, Has.Length.EqualTo(1));
@@ -244,6 +246,6 @@ public class AppCommandsUpdateTest
         var result = AppCommands.UpdateIgnorePaths(updateArgs);
 
         // Assert
-        Assert.That(result.ResultType, Is.EqualTo(ResultType.Not_Found));
+        Assert.That(result.ResultType, Is.EqualTo(ResultType.Path_Not_Found));
     }
 }

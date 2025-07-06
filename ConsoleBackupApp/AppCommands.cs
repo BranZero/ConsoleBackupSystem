@@ -18,11 +18,20 @@ add [-options] <path> [Files/Directories Names To Ignore...]
 
 remove <path>
 
+updatec [-c | -a] <sourcePath>
+    -c: Set copy mode to ForceCopy.
+    -a: Set copy mode to AllOrNone.
+    -No option: Sets copy mode to None (default).
+
+updatei [-a | -r] <sourcePath> [ignorePaths...] 
+    -a: Add new ignorePaths.
+    -d: Remove existing ignorePaths.
+
 list
 
 backup [-options] <destinationDirectory> [priorBackupDirectories...]
-    -n : Check for prior backups in destinationDirectory.
-    -c : Check for prior backups in the same folder.
+    -n : Use the list of args for prior backups.
+    -c : Check for prior backups in the destination folder.
 ";
 
     /// <summary>
@@ -107,7 +116,7 @@ backup [-options] <destinationDirectory> [priorBackupDirectories...]
         }
         if (CheckOptions(args[index], out _) != ResultType.No_Options)
         {
-            return new(ResultType.Invalid_Option, "Usage: remove <path>");;
+            return new(ResultType.Invalid_Option, "Usage: remove <path>");
         }
         //no options
         return DataFileManager.TryRemoveDataPath(args[1]);
@@ -180,8 +189,7 @@ backup [-options] <destinationDirectory> [priorBackupDirectories...]
         {
             return ResultType.Too_Many_Arguments.ToString();
         }
-        return
-HELP_MESSAGE;
+        return HELP_MESSAGE;
     }
 
     internal static string Version(string[] args)
@@ -301,7 +309,7 @@ HELP_MESSAGE;
     {
         if (args.Length < 4)
         {
-            return new(ResultType.Too_Few_Arguments, "Usage: updatei [-option] <sourcePath> [ignorePaths...]");
+            return new(ResultType.Too_Few_Arguments, "Usage: updatei [-a | -d] <sourcePath> [ignorePaths...]");
         }
         int index = 1;
         var optResult = CheckOptions(args[index], out HashSet<char> options);
@@ -317,7 +325,7 @@ HELP_MESSAGE;
             {
                 // Add ignore paths logic here
                 var result = DataFileManager.TryAddIgnorePaths(args[index], args[(index + 1)..]);
-                return new(result, result != ResultType.Success ? $"DataPath Not Found: {args[index]}" : "");
+                return result;
 
 
             }
@@ -325,7 +333,7 @@ HELP_MESSAGE;
             {
                 // Remove ignore paths logic here
                 var result = DataFileManager.TryRemoveIgnorePaths(args[index], args[(index + 1)..]);
-                return new(result, result != ResultType.Success ? $"DataPath Not Found: {args[index]}" : "");
+                return result;
             }
             else
             {
@@ -334,7 +342,7 @@ HELP_MESSAGE;
         }
         else
         {
-            return new(optResult, "Usage: updatei [-option] <sourcePath> [ignorePaths...]");
+            return new(optResult, "Usage: updatei [-a | -d] <sourcePath> [ignorePaths...]");
         }
     }
 }

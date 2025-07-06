@@ -52,10 +52,10 @@ updatec [-c | -a] <sourcePath>
 
 #### Change IgnorePaths
 ```bash
-updatei [-a | -d] <sourcePath> [ignorePaths...] 
+updatei [-a | -r] <sourcePath> [ignorePaths...] 
 ```
 - `-a`: Add new `ignorePaths`.
-- `-d`: Remove existing `ignorePaths`.
+- `-r`: Remove existing `ignorePaths`.
 
 ### List all paths currently configured for backup
 ```bash 
@@ -67,8 +67,8 @@ list
 backup [-options] <destinationDirectory> [priorBackupDirectories...]
 ```
 #### Options
-- -n: Check for prior backups in `destinationDirectory`.
-- -c: Check for prior backups in the same folder.
+- -n: Use the list of args for prior backups.
+- -c: Check for prior backups in the `destinationDirectory`.
 
 ## Requirements
 - .NET 8.0 Runtime

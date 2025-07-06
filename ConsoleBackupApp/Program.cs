@@ -101,6 +101,10 @@ public class Program
                 return AppCommands.Add(args).GetMessage();
             case "remove":
                 return AppCommands.Remove(args).GetMessage();
+            case "updatec":
+                return AppCommands.UpdateCopyMode(args).GetMessage();
+            case "updatei":
+                return AppCommands.UpdateIgnorePaths(args).GetMessage();
             case "help":
                 return AppCommands.Help(args);
             case "version":
