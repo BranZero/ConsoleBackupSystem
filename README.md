@@ -41,6 +41,22 @@ add [-options] <path> [Files/DirectoriesNames...]
 remove <path>
 ```
 
+### Update Existing Path
+#### Change Copy Mode
+```bash
+updatec [-c | -a] <sourcePath>
+```
+- `-c`: Set copy mode to `ForceCopy`.
+- `-a`: Set copy mode to `AllOrNone`.
+- No option: Sets copy mode to `None` (default).
+
+#### Change IgnorePaths
+```bash
+updatei [-a | -r] <sourcePath> [ignorePaths...] 
+```
+- `-a`: Add new `ignorePaths`.
+- `-r`: Remove existing `ignorePaths`.
+
 ### List all paths currently configured for backup
 ```bash 
 list
@@ -51,8 +67,8 @@ list
 backup [-options] <destinationDirectory> [priorBackupDirectories...]
 ```
 #### Options
-- -n: Check for prior backups in `destinationDirectory`.
-- -c: Check for prior backups in the same folder.
+- -n: Use the list of args for prior backups.
+- -c: Check for prior backups in the `destinationDirectory`.
 
 ## Requirements
 - .NET 8.0 Runtime

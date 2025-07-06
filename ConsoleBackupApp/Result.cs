@@ -15,6 +15,7 @@ public readonly struct Result(ResultType outcome, string? msg = null)
 public enum ResultType
 {
     Success,
+    No_Change,
     Info,
     Warning,
     Error,
@@ -23,9 +24,11 @@ public enum ResultType
     Path_Not_Found,
     SubPath_Or_SamePath,
     Path_Invalid,
+    Exists,
 
     //DPF Results
     Not_Found,
+    Empty,
 
     //Argument Issues
     Too_Few_Arguments,
