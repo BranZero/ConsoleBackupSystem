@@ -28,7 +28,7 @@ The ConsoleBackupSystem is a lightweight and efficient command-line tool designe
 
 ### Add a Path
 ```bash 
-add [-options] <path> [Files/DirectoriesNames...]
+add [-options] <Path> [Files/DirectoriesNames...]
 ```
 #### Options
 - -f: Force add the path even if it doesn't exist.
@@ -38,29 +38,38 @@ add [-options] <path> [Files/DirectoriesNames...]
 
 ### Remove a Path
 ```bash 
-remove <path>
+remove <Path>
 ```
 
-### Update Existing Path
-#### Change Copy Mode
+### Change Copy Mode
 ```bash
-updatec [-c | -a] <sourcePath>
+updatec [-c | -a] <Path>
 ```
+#### Options
 - `-c`: Set copy mode to `ForceCopy`.
 - `-a`: Set copy mode to `AllOrNone`.
 - No option: Sets copy mode to `None` (default).
 
-#### Change IgnorePaths
+### Change IgnorePaths
 ```bash
-updatei [-a | -r] <sourcePath> [ignorePaths...] 
+updatei [-a | -r] <Path> [ignorePaths...] 
 ```
+#### Options
 - `-a`: Add new `ignorePaths`.
 - `-r`: Remove existing `ignorePaths`.
 
-### List all paths currently configured for backup
+### Lists all paths
 ```bash 
 list
 ```
+### Info About a Path
+```bash
+info <Path>
+```
+- Displays detailed information about the specified path configured for backup, including:
+  - Path
+  - CopyMode
+  - IgnorePaths
 
 ### Perform a Backup
 ```bash 
