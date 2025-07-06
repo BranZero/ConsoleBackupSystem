@@ -101,6 +101,8 @@ public class Program
                 return AppCommands.Add(args).GetMessage();
             case "remove":
                 return AppCommands.Remove(args).GetMessage();
+            case "info":
+                return AppCommands.Info(args).GetMessage();
             case "updatec":
                 return AppCommands.UpdateCopyMode(args).GetMessage();
             case "updatei":
