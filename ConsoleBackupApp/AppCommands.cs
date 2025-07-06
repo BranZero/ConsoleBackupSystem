@@ -206,7 +206,7 @@ backup [-options] <destinationDirectory> [priorBackupDirectories...]
 
     internal static void List(string[] args)
     {
-        if (args.Length != 1)
+        if (args.Length > 1)
         {
             Console.WriteLine("Error: Too Many Arguments");
             return;
@@ -226,6 +226,30 @@ backup [-options] <destinationDirectory> [priorBackupDirectories...]
         }
     }
 
+    // Info <path>
+    internal static Result Info(string[] args)
+    {
+        if (args.Length < 2)
+        {
+            return new(ResultType.Too_Few_Arguments, "Usage: Info <path>");
+        }
+        else if (args.Length == 2)
+        {
+            DataPath dataPath = DataFileManager.GetDataPaths().FirstOrDefault(dp => dp.SourcePath == args[1]);
+            if (string.IsNullOrEmpty(dataPath.SourcePath))
+            {
+                return new(ResultType.Path_Not_Found, $"DataPath not found: {args[1]}");
+            }
+
+            string output = $"SourcePath: {dataPath.SourcePath}\nCopyMode: {dataPath.FileCopyMode}\nIgnorePaths: ";
+            output += (dataPath.IgnorePaths != null) ? string.Join(", ", dataPath.IgnorePaths) : "Empty";
+            return new(ResultType.Success, output);
+        }
+        else
+        {
+            return new(ResultType.Too_Few_Arguments, "Usage: Info <path>");
+        }
+    }
 
     public static ResultType CheckOptions(string input, out HashSet<char> options)
     {
