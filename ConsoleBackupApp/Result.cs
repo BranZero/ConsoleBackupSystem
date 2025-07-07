@@ -6,9 +6,10 @@ public readonly struct Result(ResultType outcome, string? msg = null)
     public readonly ResultType ResultType = outcome;
     public readonly string? Message = msg;
 
-    public readonly string GetMessage()
+    public string GetMessage()
     {
-        return $"{ResultType.ToString().Replace('_', ' ')}" + Message != null ? $": {Message}" : "";
+        var typeName = Enum.GetName(typeof(ResultType), ResultType)?.Replace('_', ' ') ?? ResultType.ToString();
+        return Message != null ? $"{typeName}: {Message}" : typeName;
     }
 }
 
