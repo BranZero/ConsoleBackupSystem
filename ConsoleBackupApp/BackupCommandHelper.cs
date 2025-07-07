@@ -129,7 +129,7 @@ public class BackupCommandHelper
             Logger.Instance.Log(LogLevel.Fatal, $"Something Happened while backing up the data to {baseBackupFolder}");
             return new(ResultType.Error, "Fatal error occured while the backup process was occuring.");
         }
-        return new(ResultType.Success);
+        return new(ResultType.Success, $"Completed at {baseBackupFolder}");
     }
     /// <summary>
     /// All DataPath are validated as either a file or directory if that can be located
