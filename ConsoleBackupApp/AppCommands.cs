@@ -241,7 +241,7 @@ backup [-options] <destinationDirectory> [priorBackupDirectories...]
                 return new(ResultType.Path_Not_Found, $"DataPath not found: {args[1]}");
             }
 
-            string output = $"SourcePath: {dataPath.SourcePath}\nCopyMode: {dataPath.FileCopyMode}\nIgnorePaths: ";
+            string output = $"\nSourcePath: {dataPath.SourcePath}\nCopyMode: {dataPath.FileCopyMode}\nIgnorePaths: ";
             output += (dataPath.IgnorePaths != null) ? string.Join(", ", dataPath.IgnorePaths) : "Empty";
             return new(ResultType.Success, output);
         }
