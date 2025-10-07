@@ -1,5 +1,5 @@
-
 using ConsoleBackupApp.DataPaths;
+using ConsoleBackupApp.Merge;
 using ConsoleBackupApp.PriorBackup;
 
 namespace ConsoleBackupApp;
@@ -369,6 +369,37 @@ backup [-options] <destinationDirectory> [priorBackupDirectories...]
             return new(optResult, "Usage: updatei [-a | -d] <sourcePath> [ignorePaths...]");
         }
     }
+
+    /// <summary>
+    /// Merge prior backups with merge [backupPaths...] 
+    /// </summary>
+    /// <param name="args"></param>
+    /// <returns></returns>
+    public static Result Merge(string[] args)
+    {
+        if (args.Length < 3)
+        {
+            return new(ResultType.Too_Few_Arguments, "Usage: merge [backupPaths...] ");
+        }
+        List<PriorBackupPath> priorBackups = [];
+        for (int i = 1; i < args.Length; i++)
+        {
+            if (PriorBackupPath.TryGetPriorBackup(args[i], out PriorBackupPath priorBackup))
+            {
+                priorBackups.Add(priorBackup);
+            }
+            else
+            {
+                return new Result(ResultType.Path_Invalid, $"{args[i]}");
+            }
+        }
+        if (priorBackups.Count < 2)
+        {
+            //Shouldn't ever be reached
+            return new Result(ResultType.Error, $"Merge Critial Error: Not enough prior backups found");
+        }
+
+        MergeController mergeController = MergeController.Init(priorBackups);
+        return mergeController.Start();
+    }
 }
-
-

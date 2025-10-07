@@ -65,7 +65,7 @@ public class BackupController
         {
             return new(ResultType.Info, "No Paths found to be included in backup.");
         }
-        if (!SetupBackupDirectory(_folderPath))
+        if (!SetupDirectory(_folderPath))
         {
             return new(ResultType.Error, $"Setting up the folder: {_folderPath}");
         }
@@ -130,7 +130,7 @@ public class BackupController
         return backupStat;
     }
 
-    private bool SetupBackupDirectory(string path)
+    public static bool SetupDirectory(string path)
     {
         try
         {

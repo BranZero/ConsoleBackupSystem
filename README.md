@@ -79,5 +79,14 @@ backup [-options] <destinationDirectory> [priorBackupDirectories...]
 - -n: Use the list of args for prior backups.
 - -c: Check for prior backups in the `destinationDirectory`.
 
+### Perform a Merge
+The `merge` command combines multiple prior backup directories into a single, consolidated backup. The older prior backup archives for the merged drives are deleted, leaving only the consolidated backup.
+
+**Usage Example:**
+```bash
+merge <BackupDirectory1> <BackupDirectory2> [<BackupDirectory3> ...]
+```
+
 ## Requirements
 - .NET 8.0 Runtime
+- Windows OS
