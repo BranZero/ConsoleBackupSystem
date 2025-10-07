@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using ConsoleBackupApp.Logging;
+using ConsoleBackupApp.Merge;
 
 namespace ConsoleBackupApp;
 public class Program
@@ -113,6 +114,8 @@ public class Program
                 return AppCommands.Version(args);
             case "backup":
                 return AppCommands.Backup(args).GetMessage();
+            case "merge":
+                return AppCommands.Merge(args).GetMessage();
             case "list":
                 AppCommands.List(args);
                 return "";
