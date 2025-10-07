@@ -32,6 +32,8 @@ list
 backup [-options] <destinationDirectory> [priorBackupDirectories...]
     -n : Use the list of args for prior backups.
     -c : Check for prior backups in the destination folder.
+
+merge [backupPaths...] 
 ";
 
     /// <summary>
